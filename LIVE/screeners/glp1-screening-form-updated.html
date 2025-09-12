@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLP-1 Assessment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: black;
+            background: #f5f5f5;
+            padding: 10px;
+        }
+
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: transparent;
+            border: 1px solid transparent;
+            overflow: hidden;
+        }
+
+        .form-content {
+            padding: 0;
+        }
+
+        .question-group {
+            margin: 0 0 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .question-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: black;
+            text-align: center;
+        }
+
+        .question {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .question-label {
+            display: block;
+            margin-bottom: 15px;
+            font-weight: 500;
+            color: black;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .question:last-child {
+            margin-bottom: 0;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            min-width: fit-content;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .radio-option label {
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .checkbox-option:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+
+        .checkbox-option input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .checkbox-option label {
+            cursor: pointer;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        .sub-questions {
+            margin-left: 0;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 6px;
+        }
+
+        .sub-questions.two-col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .sub-questions.three-col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .sub-question {
+            margin-bottom: 15px;
+        }
+
+        .sub-question:last-child {
+            margin-bottom: 0;
+        }
+
+        .textarea-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 16px;
+            resize: vertical;
+        }
+
+        .text-input {
+            width: 100%;
+            height: 50px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 16px;
+        }
+
+        .alcohol-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .alcohol-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .alcohol-option:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+
+        .alcohol-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .alcohol-option label {
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .follow-up {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .follow-up.show {
+            display: block;
+        }
+
+        .result-display {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+            display: none;
+        }
+
+        .result-proceed {
+            background: #f0f0f0;
+            color: black;
+            border: 1px solid #ddd;
+        }
+
+        .result-flag {
+            background: #f0f0f0;
+            color: black;
+            border: 1px solid #ddd;
+        }
+
+        .result-disqualify {
+            background: #f0f0f0;
+            color: black;
+            border: 1px solid #ddd;
+        }
+
+        .question-group {
+            display: block;
+        }
+
+        #submit-btn {
+            display: block !important;
+        }
+
+        .nav-button {
+            background: #000;
+            color: white;
+            border: none;
+            padding: 15px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            min-height: 50px;
+        }
+
+        .nav-button:hover {
+            background: #333;
+        }
+
+        .nav-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .submit-container {
+            margin: 0 0 50px 0;
+            padding: 0 20px;
+        }
+
+        #submit-btn {
+            display: block;
+            width: 100%;
+            max-width: none;
+        }
+
+        /* Mobile-specific improvements */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+                margin: 0;
+                background: #f5f5f5;
+            }
+            
+            .form-container {
+                margin: 0;
+                padding: 0;
+            }
+            
+            .form-content {
+                padding: 0;
+            }
+            
+            .question-group {
+                margin: 0 0 15px 0;
+                padding: 15px;
+                border-radius: 8px;
+            }
+            
+            .question-title {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+            
+            .question {
+                margin-bottom: 20px;
+                padding: 15px;
+            }
+            
+            .question-label {
+                font-size: 15px;
+                margin-bottom: 12px;
+                line-height: 1.3;
+            }
+            
+            /* Force single column layouts on mobile */
+            .checkbox-group { 
+                grid-template-columns: 1fr !important;
+                gap: 10px;
+            }
+            
+            .alcohol-options { 
+                grid-template-columns: 1fr !important;
+                gap: 10px;
+            }
+            
+            .sub-questions.two-col,
+            .sub-questions.three-col {
+                grid-template-columns: 1fr !important;
+                gap: 15px;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .radio-option,
+            .checkbox-option,
+            .alcohol-option {
+                padding: 12px;
+            }
+            
+            .text-input {
+                height: 45px;
+                padding: 12px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            .textarea-input {
+                min-height: 80px;
+                padding: 12px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            .nav-button {
+                width: 100%;
+                padding: 15px;
+                font-size: 16px;
+                min-height: 50px;
+            }
+            
+            .submit-container {
+                margin: 0 0 30px 0;
+                padding: 0 15px;
+            }
+            
+            /* Improve touch targets */
+            .radio-option input[type="radio"],
+            .checkbox-option input[type="checkbox"] {
+                width: 22px;
+                height: 22px;
+            }
+            
+            /* Better spacing for mobile */
+            .sub-questions {
+                padding: 12px;
+                margin-top: 12px;
+            }
+            
+            .sub-question {
+                margin-bottom: 12px;
+            }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            body {
+                padding: 2px;
+            }
+            
+            .question-group {
+                padding: 12px;
+                margin: 0 0 12px 0;
+            }
+            
+            .question {
+                padding: 12px;
+                margin-bottom: 15px;
+            }
+            
+            .question-title {
+                font-size: 16px;
+            }
+            
+            .question-label {
+                font-size: 14px;
+            }
+            
+            .checkbox-option label,
+            .radio-option label,
+            .alcohol-option label {
+                font-size: 14px;
+            }
+            
+            .submit-container {
+                padding: 0 12px;
+            }
+        }
+        
+        /* Landscape mobile orientation */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .sub-questions.two-col {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+            
+            .alcohol-options {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <form id="glp1ScreeningForm" class="form-content">
+
+            <!-- Patient Profile Section -->
+            <div class="question-group" id="profile-section">
+                <div class="question-title">Patient Profile</div>
+                
+                <div class="question">
+                    <label class="question-label">Full Name</label>
+                    <input class="text-input" id="full_name" name="full_name" type="text" required placeholder="Enter your full name">
+                </div>
+
+                <div class="question">
+                    <label class="question-label">Contact Information</label>
+                    <div class="sub-questions two-col">
+                        <div class="sub-question">
+                            <label class="question-label" for="email">Email Address</label>
+                            <input class="text-input" id="email" name="email" type="email" required placeholder="Enter your email address">
+                        </div>
+                        <div class="sub-question">
+                            <label class="question-label" for="phone">Phone Number</label>
+                            <input class="text-input" id="phone" name="phone" type="tel" required placeholder="Enter your phone number">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label class="question-label">Date of Birth</label>
+                    <input class="text-input" id="date_of_birth" name="date_of_birth" type="text" placeholder="MM/DD/YYYY" required>
+                </div>
+                
+                <div class="question">
+                    <label class="question-label">What is your gender?</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="gender_female" name="gender" value="female" required>
+                            <label for="gender_female">Female</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="gender_male" name="gender" value="male" required>
+                            <label for="gender_male">Male</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question follow-up" id="pregnancy_block">
+                    <label class="question-label">Are you currently pregnant, trying to get pregnant, or breastfeeding?</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="pregnancy_yes" name="pregnancy" value="yes">
+                            <label for="pregnancy_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="pregnancy_no" name="pregnancy" value="no">
+                            <label for="pregnancy_no">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label class="question-label">What is your height and weight?</label>
+                    <div class="sub-questions three-col">
+                        <div class="sub-question">
+                            <label class="question-label" for="height_feet">Height (feet)</label>
+                            <input class="text-input" id="height_feet" name="height_feet" type="number" min="3" max="8" placeholder="5" required>
+                        </div>
+                        <div class="sub-question">
+                            <label class="question-label" for="height_inches">Height (inches)</label>
+                            <input class="text-input" id="height_inches" name="height_inches" type="number" min="0" max="11" placeholder="6" required>
+                        </div>
+                        <div class="sub-question">
+                            <label class="question-label" for="weight_in_pounds">Weight (pounds)</label>
+                            <input class="text-input" id="weight_in_pounds" name="weight_in_pounds" type="number" min="50" max="800" placeholder="180" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label class="question-label">Are you currently receiving Chemotherapy?</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="chemotherapy_yes" name="chemotherapy" value="yes" required>
+                            <label for="chemotherapy_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="chemotherapy_no" name="chemotherapy" value="no" required>
+                            <label for="chemotherapy_no">No</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Section -->
+            <div class="question-group" id="assessment-section">
+                <div class="question-title">Assessment</div>
+
+                <div class="question">
+                    <label class="question-label">Have you ever had an adverse or allergic reaction to any GLP-1 receptor agonist? (Select all that apply)</label>
+                    <div class="checkbox-group" id="glp1_allergy_group">
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="allergy_semaglutide" name="glp1_allergy_list" value="semaglutide">
+                            <label for="allergy_semaglutide">Semaglutide</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="allergy_tirzepatide" name="glp1_allergy_list" value="tirzepatide">
+                            <label for="allergy_tirzepatide">Tirzepatide</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="allergy_dulaglutide" name="glp1_allergy_list" value="dulaglutide">
+                            <label for="allergy_dulaglutide">Dulaglutide (Trulicity)</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="allergy_exenatide" name="glp1_allergy_list" value="exenatide">
+                            <label for="allergy_exenatide">Exenatide (Bydureon/Byetta)</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="allergy_liraglutide" name="glp1_allergy_list" value="liraglutide">
+                            <label for="allergy_liraglutide">Liraglutide (Victoza/Saxenda)</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="allergy_lixisenatide" name="glp1_allergy_list" value="lixisenatide">
+                            <label for="allergy_lixisenatide">Lixisenatide (Adlyxin)</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="allergy_other" name="glp1_allergy_list" value="other_glp1">
+                            <label for="allergy_other">A Different GLP-1</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="allergy_none" name="glp1_allergy_list" value="none">
+                            <label for="allergy_none">No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label class="question-label">Do you have any of the following medical conditions? (Select all that apply)</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="diabetes_type1" name="medical_conditions" value="diabetes_type1">
+                            <label for="diabetes_type1">Diabetes Mellitus Type 1</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="diabetes_type2" name="medical_conditions" value="diabetes_type2">
+                            <label for="diabetes_type2">Diabetes Mellitus Type 2</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="diabetic_retinopathy" name="medical_conditions" value="diabetic_retinopathy">
+                            <label for="diabetic_retinopathy">Diabetic Retinopathy</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="diabetic_ketoacidosis" name="medical_conditions" value="diabetic_ketoacidosis">
+                            <label for="diabetic_ketoacidosis">Diabetic Ketoacidosis</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="pancreatitis" name="medical_conditions" value="pancreatitis">
+                            <label for="pancreatitis">Pancreatitis</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="gallbladder_disease" name="medical_conditions" value="gallbladder_disease">
+                            <label for="gallbladder_disease">Gallbladder Disease</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="medullary_thyroid" name="medical_conditions" value="medullary_thyroid">
+                            <label for="medullary_thyroid">Medullary Thyroid Carcinoma</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="men2" name="medical_conditions" value="men2">
+                            <label for="men2">Multiple Endocrine Neoplasia</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="kidney_disease" name="medical_conditions" value="kidney_disease">
+                            <label for="kidney_disease">Kidney disease/insufficiency/transplant/Acute Kidney Injury</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="stomach_problems" name="medical_conditions" value="stomach_problems">
+                            <label for="stomach_problems">Stomach Problems</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="bariatric_surgery" name="medical_conditions" value="bariatric_surgery">
+                            <label for="bariatric_surgery">Bariatric Surgery or other GI Surgery</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="liver_disease" name="medical_conditions" value="liver_disease">
+                            <label for="liver_disease">Liver Disease/Cirrhosis</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="leber_neuropathy" name="medical_conditions" value="leber_neuropathy">
+                            <label for="leber_neuropathy">Leber Hereditary Optic Neuropathy</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="medical_none" name="medical_conditions" value="none">
+                            <label for="medical_none">None of the above</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label class="question-label">Are you taking any of the following medications? (Select all that apply)</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="abiraterone" name="current_medications" value="abiraterone">
+                            <label for="abiraterone">Abiraterone acetate</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="somatrogon" name="current_medications" value="somatrogon">
+                            <label for="somatrogon">Somatrogon-GHLA</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="chloroquine" name="current_medications" value="chloroquine">
+                            <label for="chloroquine">Chloroquine or Hydroxychloroquine</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="insulin" name="current_medications" value="insulin">
+                            <label for="insulin">Insulin</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="insulin_secretagogues" name="current_medications" value="insulin_secretagogues">
+                            <label for="insulin_secretagogues">Insulin secretagogues or Diabetic Medications</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="other_glp1s" name="current_medications" value="other_glp1s">
+                            <label for="other_glp1s">Other GLP-1s</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="medications_none" name="current_medications" value="none">
+                            <label for="medications_none">None of the above</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label class="question-label">Do you currently have a known HbA1C >8%?</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="hba1c_high_yes" name="hba1c_high" value="yes" required>
+                            <label for="hba1c_high_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="hba1c_high_no" name="hba1c_high" value="no" required>
+                            <label for="hba1c_high_no">No</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label class="question-label">Do you have any family history of Multiple Endocrine Neoplasia, Type 2, (MEN 2) or Medullary Thyroid Carcinoma (MTC)?</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="family_history_yes" name="family_history" value="yes" required>
+                            <label for="family_history_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="family_history_no" name="family_history" value="no" required>
+                            <label for="family_history_no">No</label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Lifestyle Section -->
+            <div class="question-group" id="lifestyle-section">
+                <div class="question-title">Lifestyle</div>
+                
+                <div class="question">
+                    <label class="question-label">How much alcohol do you typically consume?</label>
+                    <div class="alcohol-options">
+                        <div class="alcohol-option">
+                            <input type="radio" id="alcohol_minimal" name="alcohol_amount" value="0-2_weekly" required>
+                            <label for="alcohol_minimal">0-2 drinks/week</label>
+                        </div>
+                        <div class="alcohol-option">
+                            <input type="radio" id="alcohol_moderate" name="alcohol_amount" value="3-5_weekly" required>
+                            <label for="alcohol_moderate">3-5 drinks/week</label>
+                        </div>
+                        <div class="alcohol-option">
+                            <input type="radio" id="alcohol_daily_light" name="alcohol_amount" value="1-2_daily" required>
+                            <label for="alcohol_daily_light">1-2 drinks/day</label>
+                        </div>
+                        <div class="alcohol-option">
+                            <input type="radio" id="alcohol_heavy" name="alcohol_amount" value="2+_daily" required>
+                            <label for="alcohol_heavy">2+ drinks/day</label>
+                        </div>
+                        <div class="alcohol-option">
+                            <input type="radio" id="alcohol_none" name="alcohol_amount" value="none" required>
+                            <label for="alcohol_none">None</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label class="question-label">Do you currently use tobacco or vape?</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="tobacco_yes" name="tobacco_use" value="yes">
+                            <label for="tobacco_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="tobacco_no" name="tobacco_use" value="no">
+                            <label for="tobacco_no">No</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label class="question-label">What is your exercise level?</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="exercise_low" name="exercise_level" value="low">
+                            <label for="exercise_low">Low</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="exercise_moderate" name="exercise_level" value="moderate">
+                            <label for="exercise_moderate">Moderate</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="exercise_high" name="exercise_level" value="high">
+                            <label for="exercise_high">High</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <label class="question-label">Are you currently experiencing, or have you experienced, depression with a history of suicidal attempts, suicidal thoughts, or suicidal ideation?</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="depression_yes" name="depression" value="yes" required>
+                            <label for="depression_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="depression_no" name="depression" value="no" required>
+                            <label for="depression_no">No</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="submit-container">
+                <button type="submit" class="nav-button" id="submit-btn">SUBMIT</button>
+            </div>
+
+            <!-- Result Display -->
+            <div id="result-display" class="result-display"></div>
+        </form>
+    </div>
+
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form validation and routing logic
+            const form = document.getElementById('glp1ScreeningForm');
+            const resultDisplay = document.getElementById('result-display');
+            
+            // Debug: Check if form is found
+            console.log('Form element found:', form);
+            console.log('Result display found:', resultDisplay);
+
+            // UTM and tracking parameter capture
+            function getTrackingData() {
+                const urlParams = new URLSearchParams(window.location.search);
+                
+                // Get UTM parameters
+                const utmParams = {
+                    utm_source: urlParams.get('utm_source') || '',
+                    utm_medium: urlParams.get('utm_medium') || '',
+                    utm_campaign: urlParams.get('utm_campaign') || '',
+                    utm_content: urlParams.get('utm_content') || '',
+                    utm_term: urlParams.get('utm_term') || ''
+                };
+                
+                // Get GHL merge tags (these will be populated by GoHighLevel)
+                const locationId = '{{location.id}}';
+                const locationName = '{{location.name}}';
+                const rootDomain = '{{custom_values.root_domain}}';
+                const customPrivate = '{{custom_values.private}}';
+                
+                // Process merge tags (only use if they've been replaced by GHL)
+                const ghlData = {
+                    location_id: locationId.includes('{{') ? '' : locationId,
+                    location_name: locationName.includes('{{') ? '' : locationName,
+                    root_domain: rootDomain.includes('{{') ? '' : rootDomain,
+                    custom_private: customPrivate.includes('{{') ? '' : customPrivate
+                };
+                
+                // Get any additional URL parameters
+                const additionalParams = {};
+                for (const [key, value] of urlParams.entries()) {
+                    if (!key.startsWith('utm_')) {
+                        additionalParams[key] = value;
+                    }
+                }
+                
+                return {
+                    utm_params: utmParams,
+                    ghl_data: ghlData,
+                    additional_params: additionalParams,
+                    page_url: window.location.href,
+                    referrer: document.referrer || ''
+                };
+            }
+
+            // Get tracking data on page load
+            const trackingData = getTrackingData();
+            console.log('Tracking data captured:', trackingData);
+        
+        // Follow-up question handlers
+        function setupFollowUpQuestions() {
+            // Pregnancy follow-up visibility based on gender
+            const genderRadios = document.querySelectorAll('input[name="gender"]');
+            const pregnancyBlock = document.getElementById('pregnancy_block');
+            
+            genderRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const pregnancyRadios = document.querySelectorAll('input[name="pregnancy"]');
+                    if (this.value === 'female') {
+                        pregnancyBlock.classList.add('show');
+                        // Make pregnancy question required
+                        pregnancyRadios.forEach(radio => radio.required = true);
+                    } else {
+                        pregnancyBlock.classList.remove('show');
+                        // Remove required attribute and clear selection
+                        pregnancyRadios.forEach(radio => {
+                            radio.required = false;
+                            radio.checked = false;
+                        });
+                    }
+                });
+            });
+        }
+
+        // Early disqualify helpers
+        function getDisqualifyReason(formData) {
+            // Age validation - must be 18 or older
+            const dateOfBirth = formData.get('date_of_birth');
+            if (dateOfBirth) {
+                const birthDate = new Date(dateOfBirth);
+                const today = new Date();
+                const age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                
+                // Adjust age if birthday hasn't occurred this year
+                const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
+                
+                if (actualAge < 18) {
+                    return 'You must be 18 years or older to use this service.';
+                }
+            }
+            
+            // Direct disqualifiers
+            // Allergies via checkbox list (any selection other than None)
+            const allergyList = formData.getAll('glp1_allergy_list');
+            if (allergyList.length > 0 && !allergyList.includes('none')) {
+                return 'Allergic reaction to GLP-1 receptor agonist is a contraindication.';
+            }
+            if (formData.get('hba1c_high') === 'yes') {
+                return 'HbA1C >8% is a contraindication.';
+            }
+            if (formData.get('pregnancy') === 'yes') {
+                return 'Pregnancy, trying to get pregnant, or breastfeeding is a contraindication.';
+            }
+            if (formData.get('depression') === 'yes') {
+                return 'DEPRESSION_SPECIAL_MESSAGE';
+            }
+            if (formData.get('alcohol_amount') === '2+_daily') {
+                return 'Consuming more than 2 alcoholic drinks per day is a contraindication.';
+            }
+            if (formData.get('family_history') === 'yes') {
+                return 'Family history of MEN 2 or Medullary Thyroid Carcinoma is a contraindication.';
+            }
+            if (formData.get('chemotherapy') === 'yes') {
+                return 'Current chemotherapy treatment is a contraindication.';
+            }
+
+            // Medical conditions
+            const medicalConditions = formData.getAll('medical_conditions');
+            const disqualifyingConditions = ['pancreatitis', 'medullary_thyroid', 'men2', 'liver_disease', 'leber_neuropathy'];
+            const hasDisqualifyingCondition = medicalConditions.some(condition => disqualifyingConditions.includes(condition));
+            if (hasDisqualifyingCondition) {
+                const conditionNames = {
+                    pancreatitis: 'Pancreatitis',
+                    medullary_thyroid: 'Medullary Thyroid Carcinoma',
+                    men2: 'Multiple Endocrine Neoplasia',
+                    liver_disease: 'Liver Disease/Cirrhosis',
+                    leber_neuropathy: 'Leber Hereditary Optic Neuropathy'
+                };
+                const found = medicalConditions.filter(c => disqualifyingConditions.includes(c));
+                return `${found.map(c => conditionNames[c]).join(', ')} is a contraindication for GLP-1 therapy.`;
+            }
+
+            // Medications
+            const medications = formData.getAll('current_medications');
+            const disqualifyingMeds = ['abiraterone', 'somatrogon', 'chloroquine', 'insulin', 'other_glp1s'];
+            const hasDisqualifyingMed = medications.some(med => disqualifyingMeds.includes(med));
+            if (hasDisqualifyingMed) {
+                return 'Current medication regimen includes contraindicated drugs for GLP-1 therapy.';
+            }
+
+            return '';
+        }
+
+        function earlyDisqualify(reason) {
+            // Prepare payload before locking UI
+            const formData = new FormData(form);
+            const submissionData = {
+                form_type: 'GLP1_Screening',
+                timestamp: new Date().toISOString(),
+                routing_outcome: 'DISQUALIFY',
+                routing_reason: reason,
+                responses: Object.fromEntries(formData.entries()),
+                multi_select_responses: {
+                    medical_conditions: formData.getAll('medical_conditions'),
+                    current_medications: formData.getAll('current_medications')
+                },
+                tracking_data: trackingData
+            };
+
+            // Hide all sections and show message
+            document.querySelectorAll('.question-group').forEach(group => {
+                group.style.display = 'none';
+            });
+            
+            // Hide submit button and container
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) {
+                submitBtn.style.display = 'none';
+            }
+            const submitContainer = document.querySelector('.submit-container');
+            if (submitContainer) {
+                submitContainer.style.display = 'none';
+            }
+
+            resultDisplay.style.display = 'block';
+            resultDisplay.className = 'result-display result-disqualify';
+            if (reason === 'DEPRESSION_SPECIAL_MESSAGE') {
+                resultDisplay.innerHTML = `
+                    <div style="font-size: 18px; margin-bottom: 10px;">❌ Not Eligible for Treatment</div>
+                    <div style="text-align:left; max-width:720px; margin:0 auto; font-size: 14px; font-weight: normal; line-height:1.5;">
+                        <p><strong>We care about your safety.</strong></p>
+                        <p>Because you indicated that you are feeling depressed or having thoughts of suicide, you are not eligible to continue with this program/medication at this time.</p>
+                        <p>You are not alone, and help is available:</p>
+                        <ul style="margin-left: 18px;">
+                            <li>Call or text 988 to connect with the Suicide & Crisis Lifeline.</li>
+                            <li>If you are in immediate danger of harming yourself, call 911 or go to the nearest Emergency Department.</li>
+                        </ul>
+                        <p>Please reach out to a trusted family member, friend, or mental health professional today.</p>
+                        <p>Your wellbeing is our top priority.</p>
+                    </div>
+                    <div style="margin-top: 16px; text-align:center;">
+                        <button id="start-over" style="background:black;color:white;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;">Start Over</button>
+                    </div>
+                `;
+            } else {
+                resultDisplay.innerHTML = `
+                    <div style="font-size: 18px; margin-bottom: 10px;">❌ Not Eligible for Treatment</div>
+                    <div style="font-size: 14px; font-weight: normal;">Thank you for starting your assessment - unfortunately, you don't qualify if ${reason}</div>
+                    <div style="margin-top: 16px;">
+                        <button id="start-over" style="background:black;color:white;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;">Start Over</button>
+                    </div>
+                `;
+            }
+            resultDisplay.scrollIntoView({ behavior: 'smooth' });
+
+            // Disable all form inputs to prevent further changes
+            const inputs = form.querySelectorAll('input, textarea, button');
+            inputs.forEach(el => { el.disabled = true; });
+            
+            // Re-enable the Start Over button after it's created
+            setTimeout(() => {
+                const startOverBtn = document.getElementById('start-over');
+                if (startOverBtn) {
+                    startOverBtn.disabled = false;
+                }
+            }, 100);
+        }
+
+        function setupEarlyDisqualifyMonitoring() {
+            const disqualifierSelectors = [
+                'input[name="date_of_birth"]',
+                'input[name="glp1_allergy_list"]',
+                'input[name="hba1c_high"]',
+                'input[name="pregnancy"]',
+                'input[name="depression"]',
+                'input[name="alcohol_amount"]',
+                'input[name="family_history"]',
+                'input[name="chemotherapy"]',
+                'input[name="medical_conditions"]',
+                'input[name="current_medications"]'
+            ].join(',');
+
+            const handler = function() {
+                const formData = new FormData(form);
+                const reason = getDisqualifyReason(formData);
+                if (reason) {
+                    earlyDisqualify(reason);
+                }
+            };
+
+            document.querySelectorAll(disqualifierSelectors).forEach(input => {
+                input.addEventListener('change', handler);
+            });
+        }
+
+        // Routing logic
+        function determineRouting(formData) {
+            // Get form data for URL parameters
+            const name = encodeURIComponent(formData.get('full_name') || '');
+            const email = encodeURIComponent(formData.get('email') || '');
+            const phone = encodeURIComponent(formData.get('phone') || '');
+            
+            // Build parameter string including UTMs and tracking data
+            let params = `?name=${name}&email=${email}&phone=${phone}`;
+            
+            // Add UTM parameters if they exist
+            Object.entries(trackingData.utm_params).forEach(([key, value]) => {
+                if (value) {
+                    params += `&${key}=${encodeURIComponent(value)}`;
+                }
+            });
+            
+            // Add GHL data if available
+            Object.entries(trackingData.ghl_data).forEach(([key, value]) => {
+                if (value) {
+                    params += `&${key}=${encodeURIComponent(value)}`;
+                }
+            });
+            
+            // Add any additional parameters
+            Object.entries(trackingData.additional_params).forEach(([key, value]) => {
+                if (value) {
+                    params += `&${key}=${encodeURIComponent(value)}`;
+                }
+            });
+            
+            // Check for DISQUALIFY conditions
+            const disqualifyConditions = [
+                (formData.getAll('glp1_allergy_list').length > 0 && !formData.getAll('glp1_allergy_list').includes('none')),
+                formData.get('hba1c_high') === 'yes',
+                formData.get('pregnancy') === 'yes',
+                formData.get('depression') === 'yes',
+                formData.get('alcohol_amount') === '2+_daily',
+                formData.get('family_history') === 'yes',
+                formData.get('chemotherapy') === 'yes'
+            ];
+
+            // Check for disqualifying medical conditions
+            const medicalConditions = formData.getAll('medical_conditions');
+            const disqualifyingConditions = ['pancreatitis', 'medullary_thyroid', 'men2', 'liver_disease', 'leber_neuropathy'];
+            const hasDisqualifyingCondition = medicalConditions.some(condition => disqualifyingConditions.includes(condition));
+
+            // Check for disqualifying medications
+            const medications = formData.getAll('current_medications');
+            const disqualifyingMeds = ['abiraterone', 'somatrogon', 'chloroquine', 'insulin', 'other_glp1s'];
+            const hasDisqualifyingMed = medications.some(med => disqualifyingMeds.includes(med));
+
+            if (disqualifyConditions.some(condition => condition) || hasDisqualifyingCondition || hasDisqualifyingMed) {
+                return {
+                    outcome: 'DISQUALIFY',
+                    redirectUrl: '{{custom_values.root_domain}}/thankyou'
+                };
+            }
+
+            // FLAG conditions
+            if (formData.getAll('medical_conditions').includes('diabetes_type2')) {
+                return {
+                    outcome: 'FLAG',
+                    redirectUrl: `{{custom_values.root_domain}}/weightloss-fee${params}`
+                };
+            }
+
+            const flagConditions = ['diabetic_retinopathy', 'diabetic_ketoacidosis', 'gallbladder_disease', 'kidney_disease', 'stomach_problems', 'bariatric_surgery'];
+            const hasFlagCondition = medicalConditions.some(condition => flagConditions.includes(condition));
+            
+            if (hasFlagCondition) {
+                return {
+                    outcome: 'FLAG',
+                    redirectUrl: `{{custom_values.root_domain}}/weightloss-fee${params}`
+                };
+            }
+
+            const flagMeds = ['insulin_secretagogues'];
+            const hasFlagMed = medications.some(med => flagMeds.includes(med));
+            
+            if (hasFlagMed) {
+                return {
+                    outcome: 'FLAG',
+                    redirectUrl: `{{custom_values.root_domain}}/weightloss-fee${params}`
+                };
+            }
+
+            if (['3-5_weekly', '1-2_daily'].includes(formData.get('alcohol_amount'))) {
+                return {
+                    outcome: 'FLAG',
+                    redirectUrl: `{{custom_values.root_domain}}/weightloss-fee${params}`
+                };
+            }
+
+            // PROCEED if no contraindications
+            return {
+                outcome: 'PROCEED',
+                redirectUrl: `{{custom_values.root_domain}}/weightloss-fee${params}`
+            };
+        }
+
+        // Trigger GHL redirect function
+        function triggerGHLRedirect(redirectUrl) {
+            // Dispatch custom event with the specific redirect URL
+            const redirectEvent = new CustomEvent('ghlRedirect', {
+                detail: { 
+                    category: 'weightloss',
+                    formType: 'glp1',
+                    redirectUrl: redirectUrl 
+                }
+            });
+            window.dispatchEvent(redirectEvent);
+            
+            // Fallback direct redirect if footer code doesn't handle it
+            setTimeout(function() {
+                if (typeof window.redirectToURL === 'function') {
+                    window.redirectToURL(redirectUrl);
+                } else {
+                    window.location.href = redirectUrl;
+                }
+            }, 500);
+        }
+
+        // Form submission handler
+        form.addEventListener('submit', function(e) {
+            console.log('Form submit event triggered!');
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            console.log('Form data collected:', Object.fromEntries(formData.entries()));
+            const result = determineRouting(formData);
+            console.log('Routing result:', result);
+
+            // Prepare data for webhook
+            const submissionData = {
+                form_type: 'GLP1_Screening',
+                timestamp: new Date().toISOString(),
+                routing_outcome: result.outcome,
+                responses: Object.fromEntries(formData.entries()),
+                multi_select_responses: {
+                    medical_conditions: formData.getAll('medical_conditions'),
+                    current_medications: formData.getAll('current_medications')
+                },
+                tracking_data: trackingData
+            };
+
+            // Send webhook for ALL form submissions
+            console.log('Sending form submission webhook:', submissionData);
+            fetch('https://locumtele.app.n8n.cloud/webhook/patient-screener', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(submissionData)
+            })
+            .then(response => {
+                console.log('Form webhook response:', response.status, response.statusText);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Form webhook success:', data);
+                // Only redirect if PROCEED (qualify)
+                if (result.outcome === 'PROCEED') {
+                    triggerGHLRedirect(result.redirectUrl);
+                }
+            })
+            .catch(error => {
+                console.error('Form webhook error:', error);
+                // On error, do not redirect unless qualify
+                if (result.outcome === 'PROCEED') {
+                    triggerGHLRedirect(result.redirectUrl);
+                }
+            });
+        });
+
+        // Initialize form
+        setupFollowUpQuestions();
+        setupEarlyDisqualifyMonitoring();
+        
+        // Event delegation for Start Over button
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'start-over') {
+                // Re-enable all inputs and reset form
+                const allInputs = form.querySelectorAll('input, textarea, button');
+                allInputs.forEach(el => { el.disabled = false; });
+                form.reset();
+                
+                // Show all sections
+                document.querySelectorAll('.question-group').forEach(group => {
+                    group.style.display = 'block';
+                });
+                
+                // Show submit button and container
+                const submitBtn = document.getElementById('submit-btn');
+                if (submitBtn) {
+                    submitBtn.style.display = '';
+                }
+                const submitContainer = document.querySelector('.submit-container');
+                if (submitContainer) {
+                    submitContainer.style.display = '';
+                }
+                
+                // Hide dynamic blocks
+                const pregnancyBlock = document.getElementById('pregnancy_block');
+                if (pregnancyBlock) pregnancyBlock.classList.remove('show');
+                
+                // Clear result display
+                resultDisplay.style.display = 'none';
+                resultDisplay.innerHTML = '';
+            }
+        });
+        
+        }); // End DOMContentLoaded
+    </script>
+</body>
+</html>
