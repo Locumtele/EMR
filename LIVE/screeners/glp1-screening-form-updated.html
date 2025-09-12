@@ -1165,8 +1165,7 @@
             const redirectEvent = new CustomEvent('ghlRedirect', {
                 detail: { 
                     category: 'weightloss',
-                    formType: 'glp1',
-                    redirectUrl: redirectUrl 
+                    formType: 'glp1'
                 }
             });
             window.dispatchEvent(redirectEvent);
@@ -1224,14 +1223,28 @@
                 console.log('Form webhook success:', data);
                 // Only redirect if PROCEED (qualify)
                 if (result.outcome === 'PROCEED') {
-                    triggerGHLRedirect(result.redirectUrl);
+                    // Send event to footer instead of direct redirect
+                    const redirectEvent = new CustomEvent('ghlRedirect', {
+                        detail: { 
+                            category: 'weightloss',
+                            formType: 'glp1'
+                        }
+                    });
+                    window.dispatchEvent(redirectEvent);
                 }
             })
             .catch(error => {
                 console.error('Form webhook error:', error);
                 // On error, do not redirect unless qualify
                 if (result.outcome === 'PROCEED') {
-                    triggerGHLRedirect(result.redirectUrl);
+                    // Send event to footer instead of direct redirect
+                    const redirectEvent = new CustomEvent('ghlRedirect', {
+                        detail: { 
+                            category: 'weightloss',
+                            formType: 'glp1'
+                        }
+                    });
+                    window.dispatchEvent(redirectEvent);
                 }
             });
         });

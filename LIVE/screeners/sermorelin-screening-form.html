@@ -94,43 +94,6 @@
             cursor: pointer;
         }
 
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .checkbox-option {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: white;
-        }
-
-        .checkbox-option:hover {
-            background: #f0f0f0;
-            border-color: #999;
-        }
-
-        .checkbox-option input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            margin-top: 2px;
-            flex-shrink: 0;
-        }
-
-        .checkbox-option label {
-            cursor: pointer;
-            font-size: 15px;
-            line-height: 1.4;
-        }
-
         .sub-questions {
             margin-left: 0;
             margin-top: 15px;
@@ -202,30 +165,10 @@
             display: none;
         }
 
-        .result-proceed {
-            background: #f0f0f0;
-            color: black;
-            border: 1px solid #ddd;
-        }
-
-        .result-flag {
-            background: #f0f0f0;
-            color: black;
-            border: 1px solid #ddd;
-        }
-
         .result-disqualify {
             background: #f0f0f0;
             color: black;
             border: 1px solid #ddd;
-        }
-
-        .question-group {
-            display: block;
-        }
-
-        #submit-btn {
-            display: block !important;
         }
 
         .nav-button {
@@ -242,11 +185,6 @@
 
         .nav-button:hover {
             background: #333;
-        }
-
-        .nav-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
         }
 
         .submit-container {
@@ -299,12 +237,6 @@
                 line-height: 1.3;
             }
             
-            /* Force single column layouts on mobile */
-            .checkbox-group { 
-                grid-template-columns: 1fr !important;
-                gap: 10px;
-            }
-            
             .sub-questions.two-col,
             .sub-questions.three-col {
                 grid-template-columns: 1fr !important;
@@ -316,21 +248,20 @@
                 gap: 12px;
             }
             
-            .radio-option,
-            .checkbox-option {
+            .radio-option {
                 padding: 12px;
             }
             
             .text-input {
                 height: 45px;
                 padding: 12px;
-                font-size: 16px; /* Prevents zoom on iOS */
+                font-size: 16px;
             }
             
             .textarea-input {
                 min-height: 80px;
                 padding: 12px;
-                font-size: 16px; /* Prevents zoom on iOS */
+                font-size: 16px;
             }
             
             .nav-button {
@@ -345,14 +276,11 @@
                 padding: 0 15px;
             }
             
-            /* Improve touch targets */
-            .radio-option input[type="radio"],
-            .checkbox-option input[type="checkbox"] {
+            .radio-option input[type="radio"] {
                 width: 22px;
                 height: 22px;
             }
             
-            /* Better spacing for mobile */
             .sub-questions {
                 padding: 12px;
                 margin-top: 12px;
@@ -363,7 +291,6 @@
             }
         }
         
-        /* Extra small screens */
         @media (max-width: 480px) {
             body {
                 padding: 2px;
@@ -387,24 +314,12 @@
                 font-size: 14px;
             }
             
-            .checkbox-option label,
             .radio-option label {
                 font-size: 14px;
             }
             
             .submit-container {
                 padding: 0 12px;
-            }
-        }
-        
-        /* Landscape mobile orientation */
-        @media (max-width: 768px) and (orientation: landscape) {
-            .sub-questions.two-col {
-                grid-template-columns: repeat(2, 1fr) !important;
-            }
-            
-            .checkbox-group {
-                grid-template-columns: repeat(2, 1fr) !important;
             }
         }
     </style>
@@ -765,423 +680,448 @@
             // Get tracking data on page load
             const trackingData = getTrackingData();
             console.log('Tracking data captured:', trackingData);
-        
-        // Follow-up question handlers
-        function setupFollowUpQuestions() {
-            // Pregnancy follow-up visibility based on gender
-            const genderRadios = document.querySelectorAll('input[name="gender"]');
-            const pregnancyBlock = document.getElementById('pregnancy_block');
-            
-            genderRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const pregnancyRadios = document.querySelectorAll('input[name="pregnancy"]');
-                    if (this.value === 'female') {
-                        pregnancyBlock.classList.add('show');
-                        pregnancyRadios.forEach(radio => radio.required = true);
-                    } else {
-                        pregnancyBlock.classList.remove('show');
-                        pregnancyRadios.forEach(radio => {
-                            radio.required = false;
-                            radio.checked = false;
-                        });
-                    }
-                });
-            });
 
-            // Allergies list follow-up
-            const allergiesRadios = document.querySelectorAll('input[name="allergies"]');
-            const allergiesListBlock = document.getElementById('allergies_list_block');
-            
-            allergiesRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.value === 'yes') {
-                        allergiesListBlock.classList.add('show');
-                    } else {
-                        allergiesListBlock.classList.remove('show');
-                        document.getElementById('allergies_list').value = '';
-                    }
-                });
-            });
-
-            // Previous Sermorelin dose follow-up
-            const previousSermorelinRadios = document.querySelectorAll('input[name="previous_sermorelin"]');
-            const previousDoseBlock = document.getElementById('previous_dose_block');
-            
-            previousSermorelinRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.value === 'yes') {
-                        previousDoseBlock.classList.add('show');
-                    } else {
-                        previousDoseBlock.classList.remove('show');
-                        document.getElementById('previous_dose').value = '';
-                    }
-                });
-            });
-
-            // Current Sermorelin dose follow-up
-            const currentSermorelinRadios = document.querySelectorAll('input[name="current_sermorelin"]');
-            const currentDoseBlock = document.getElementById('current_dose_block');
-            
-            currentSermorelinRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.value === 'yes') {
-                        currentDoseBlock.classList.add('show');
-                    } else {
-                        currentDoseBlock.classList.remove('show');
-                        document.getElementById('current_dose').value = '';
-                    }
-                });
-            });
-
-            // Cancer type follow-up
-            const cancerRadios = document.querySelectorAll('input[name="cancer"]');
-            const cancerTypeBlock = document.getElementById('cancer_type_block');
-            
-            cancerRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.value === 'yes') {
-                        cancerTypeBlock.classList.add('show');
-                    } else {
-                        cancerTypeBlock.classList.remove('show');
-                        document.getElementById('cancer_type').value = '';
-                    }
-                });
-            });
-
-            // Thyroid controlled follow-up
-            const thyroidRadios = document.querySelectorAll('input[name="thyroid"]');
-            const thyroidControlledBlock = document.getElementById('thyroid_controlled_block');
-            
-            thyroidRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const thyroidControlledRadios = document.querySelectorAll('input[name="thyroid_controlled"]');
-                    if (this.value === 'yes') {
-                        thyroidControlledBlock.classList.add('show');
-                        thyroidControlledRadios.forEach(radio => radio.required = true);
-                    } else {
-                        thyroidControlledBlock.classList.remove('show');
-                        thyroidControlledRadios.forEach(radio => {
-                            radio.required = false;
-                            radio.checked = false;
-                        });
-                    }
-                });
-            });
-        }
-
-        // Early disqualify helpers
-        function getDisqualifyReason(formData) {
-            // Age validation - must be 18 or older
-            const dateOfBirth = formData.get('date_of_birth');
-            if (dateOfBirth) {
-                const birthDate = new Date(dateOfBirth);
-                const today = new Date();
-                const age = today.getFullYear() - birthDate.getFullYear();
-                const monthDiff = today.getMonth() - birthDate.getMonth();
+            // Follow-up question handlers
+            function setupFollowUpQuestions() {
+                // Pregnancy follow-up visibility based on gender
+                const genderRadios = document.querySelectorAll('input[name="gender"]');
+                const pregnancyBlock = document.getElementById('pregnancy_block');
                 
-                // Adjust age if birthday hasn't occurred this year
-                const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
+                if (genderRadios.length && pregnancyBlock) {
+                    genderRadios.forEach(radio => {
+                        radio.addEventListener('change', function() {
+                            const pregnancyRadios = document.querySelectorAll('input[name="pregnancy"]');
+                            if (this.value === 'female') {
+                                pregnancyBlock.classList.add('show');
+                                pregnancyRadios.forEach(radio => radio.required = true);
+                            } else {
+                                pregnancyBlock.classList.remove('show');
+                                pregnancyRadios.forEach(radio => {
+                                    radio.required = false;
+                                    radio.checked = false;
+                                });
+                            }
+                        });
+                    });
+                }
+
+                // Allergies list follow-up
+                const allergiesRadios = document.querySelectorAll('input[name="allergies"]');
+                const allergiesListBlock = document.getElementById('allergies_list_block');
                 
-                if (actualAge < 18) {
-                    return 'You must be 18 years or older to use this service.';
+                if (allergiesRadios.length && allergiesListBlock) {
+                    allergiesRadios.forEach(radio => {
+                        radio.addEventListener('change', function() {
+                            if (this.value === 'yes') {
+                                allergiesListBlock.classList.add('show');
+                            } else {
+                                allergiesListBlock.classList.remove('show');
+                                const listInput = document.getElementById('allergies_list');
+                                if (listInput) listInput.value = '';
+                            }
+                        });
+                    });
+                }
+
+                // Previous Sermorelin dose follow-up
+                const previousSermorelinRadios = document.querySelectorAll('input[name="previous_sermorelin"]');
+                const previousDoseBlock = document.getElementById('previous_dose_block');
+                
+                if (previousSermorelinRadios.length && previousDoseBlock) {
+                    previousSermorelinRadios.forEach(radio => {
+                        radio.addEventListener('change', function() {
+                            if (this.value === 'yes') {
+                                previousDoseBlock.classList.add('show');
+                            } else {
+                                previousDoseBlock.classList.remove('show');
+                                const doseInput = document.getElementById('previous_dose');
+                                if (doseInput) doseInput.value = '';
+                            }
+                        });
+                    });
+                }
+
+                // Current Sermorelin dose follow-up
+                const currentSermorelinRadios = document.querySelectorAll('input[name="current_sermorelin"]');
+                const currentDoseBlock = document.getElementById('current_dose_block');
+                
+                if (currentSermorelinRadios.length && currentDoseBlock) {
+                    currentSermorelinRadios.forEach(radio => {
+                        radio.addEventListener('change', function() {
+                            if (this.value === 'yes') {
+                                currentDoseBlock.classList.add('show');
+                            } else {
+                                currentDoseBlock.classList.remove('show');
+                                const doseInput = document.getElementById('current_dose');
+                                if (doseInput) doseInput.value = '';
+                            }
+                        });
+                    });
+                }
+
+                // Cancer type follow-up
+                const cancerRadios = document.querySelectorAll('input[name="cancer"]');
+                const cancerTypeBlock = document.getElementById('cancer_type_block');
+                
+                if (cancerRadios.length && cancerTypeBlock) {
+                    cancerRadios.forEach(radio => {
+                        radio.addEventListener('change', function() {
+                            if (this.value === 'yes') {
+                                cancerTypeBlock.classList.add('show');
+                            } else {
+                                cancerTypeBlock.classList.remove('show');
+                                const typeInput = document.getElementById('cancer_type');
+                                if (typeInput) typeInput.value = '';
+                            }
+                        });
+                    });
+                }
+
+                // Thyroid controlled follow-up
+                const thyroidRadios = document.querySelectorAll('input[name="thyroid"]');
+                const thyroidControlledBlock = document.getElementById('thyroid_controlled_block');
+                
+                if (thyroidRadios.length && thyroidControlledBlock) {
+                    thyroidRadios.forEach(radio => {
+                        radio.addEventListener('change', function() {
+                            const thyroidControlledRadios = document.querySelectorAll('input[name="thyroid_controlled"]');
+                            if (this.value === 'yes') {
+                                thyroidControlledBlock.classList.add('show');
+                                thyroidControlledRadios.forEach(radio => radio.required = true);
+                            } else {
+                                thyroidControlledBlock.classList.remove('show');
+                                thyroidControlledRadios.forEach(radio => {
+                                    radio.required = false;
+                                    radio.checked = false;
+                                });
+                            }
+                        });
+                    });
                 }
             }
-            
-            // Direct disqualifiers (hard stops)
-            if (formData.get('pregnancy') === 'yes') {
-                return 'Pregnancy, trying to get pregnant, or breastfeeding is a contraindication.';
-            }
-            if (formData.get('depression') === 'yes') {
-                return 'DEPRESSION_SPECIAL_MESSAGE';
-            }
-            if (formData.get('chemotherapy') === 'yes') {
-                return 'Current chemotherapy treatment is a contraindication.';
-            }
-            if (formData.get('cancer') === 'yes') {
-                return 'Current cancer or history of cancer is a contraindication for Sermorelin.';
-            }
-            if (formData.get('athlete') === 'yes') {
-                return 'Professional athletes cannot use Sermorelin as it is banned by WADA (World Anti-Doping Agency).';
-            }
-            if (formData.get('thyroid') === 'yes' && formData.get('thyroid_controlled') === 'no') {
-                return 'Uncontrolled thyroid issues are a contraindication for Sermorelin.';
-            }
 
-            return '';
-        }
-
-        function earlyDisqualify(reason) {
-            // Prepare payload before locking UI
-            const formData = new FormData(form);
-            const submissionData = {
-                form_type: 'Sermorelin_Screening',
-                timestamp: new Date().toISOString(),
-                routing_outcome: 'DISQUALIFY',
-                routing_reason: reason,
-                responses: Object.fromEntries(formData.entries()),
-                tracking_data: trackingData
-            };
-
-            // Hide all sections and show message
-            document.querySelectorAll('.question-group').forEach(group => {
-                group.style.display = 'none';
-            });
-            
-            // Hide submit button and container
-            const submitBtn = document.getElementById('submit-btn');
-            if (submitBtn) {
-                submitBtn.style.display = 'none';
-            }
-            const submitContainer = document.querySelector('.submit-container');
-            if (submitContainer) {
-                submitContainer.style.display = 'none';
-            }
-
-            resultDisplay.style.display = 'block';
-            resultDisplay.className = 'result-display result-disqualify';
-            if (reason === 'DEPRESSION_SPECIAL_MESSAGE') {
-                resultDisplay.innerHTML = `
-                    <div style="font-size: 18px; margin-bottom: 10px;">❌ Not Eligible for Treatment</div>
-                    <div style="text-align:left; max-width:720px; margin:0 auto; font-size: 14px; font-weight: normal; line-height:1.5;">
-                        <p><strong>We care about your safety.</strong></p>
-                        <p>Because you indicated that you are feeling depressed or having thoughts of suicide, you are not eligible to continue with this program/medication at this time.</p>
-                        <p>You are not alone, and help is available:</p>
-                        <ul style="margin-left: 18px;">
-                            <li>Call or text 988 to connect with the Suicide & Crisis Lifeline.</li>
-                            <li>If you are in immediate danger of harming yourself, call 911 or go to the nearest Emergency Department.</li>
-                        </ul>
-                        <p>Please reach out to a trusted family member, friend, or mental health professional today.</p>
-                        <p>Your wellbeing is our top priority.</p>
-                    </div>
-                    <div style="margin-top: 16px; text-align:center;">
-                        <button id="start-over" style="background:black;color:white;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;">Start Over</button>
-                    </div>
-                `;
-            } else {
-                resultDisplay.innerHTML = `
-                    <div style="font-size: 18px; margin-bottom: 10px;">❌ Not Eligible for Treatment</div>
-                    <div style="font-size: 14px; font-weight: normal;">Thank you for starting your assessment - unfortunately, you don't qualify because ${reason}</div>
-                    <div style="margin-top: 16px;">
-                        <button id="start-over" style="background:black;color:white;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;">Start Over</button>
-                    </div>
-                `;
-            }
-            resultDisplay.scrollIntoView({ behavior: 'smooth' });
-
-            // Disable all form inputs to prevent further changes
-            const inputs = form.querySelectorAll('input, textarea, button');
-            inputs.forEach(el => { el.disabled = true; });
-            
-            // Re-enable the Start Over button after it's created
-            setTimeout(() => {
-                const startOverBtn = document.getElementById('start-over');
-                if (startOverBtn) {
-                    startOverBtn.disabled = false;
+            // Early disqualify helpers
+            function getDisqualifyReason(formData) {
+                // Age validation - must be 18 or older
+                const dateOfBirth = formData.get('date_of_birth');
+                if (dateOfBirth) {
+                    const birthDate = new Date(dateOfBirth);
+                    const today = new Date();
+                    const age = today.getFullYear() - birthDate.getFullYear();
+                    const monthDiff = today.getMonth() - birthDate.getMonth();
+                    
+                    // Adjust age if birthday hasn't occurred this year
+                    const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
+                    
+                    if (actualAge < 18) {
+                        return 'You must be 18 years or older to use this service.';
+                    }
                 }
-            }, 100);
-        }
+                
+                // Common disqualifiers
+                if (formData.get('pregnancy') === 'yes') {
+                    return 'Pregnancy, trying to get pregnant, or breastfeeding is a contraindication.';
+                }
+                if (formData.get('depression') === 'yes') {
+                    return 'DEPRESSION_SPECIAL_MESSAGE';
+                }
+                if (formData.get('chemotherapy') === 'yes') {
+                    return 'Current chemotherapy treatment is a contraindication.';
+                }
 
-        function setupEarlyDisqualifyMonitoring() {
-            const disqualifierSelectors = [
-                'input[name="date_of_birth"]',
-                'input[name="pregnancy"]',
-                'input[name="depression"]',
-                'input[name="chemotherapy"]',
-                'input[name="cancer"]',
-                'input[name="athlete"]',
-                'input[name="thyroid_controlled"]'
-            ].join(',');
+                // Sermorelin-specific disqualifiers
+                if (formData.get('cancer') === 'yes') {
+                    return 'Current cancer or history of cancer is a contraindication for Sermorelin.';
+                }
+                if (formData.get('athlete') === 'yes') {
+                    return 'Professional athletes cannot use Sermorelin as it is banned by WADA (World Anti-Doping Agency).';
+                }
+                if (formData.get('thyroid') === 'yes' && formData.get('thyroid_controlled') === 'no') {
+                    return 'Uncontrolled thyroid issues are a contraindication for Sermorelin.';
+                }
 
-            const handler = function() {
+                return '';
+            }
+
+            function earlyDisqualify(reason) {
+                // Prepare payload before locking UI
                 const formData = new FormData(form);
+                const submissionData = {
+                    form_type: 'Sermorelin_Screening',
+                    timestamp: new Date().toISOString(),
+                    routing_outcome: 'DISQUALIFY',
+                    routing_reason: reason,
+                    responses: Object.fromEntries(formData.entries()),
+                    tracking_data: trackingData
+                };
+
+                // Send webhook
+                sendWebhook(submissionData);
+
+                // Hide all sections and show message
+                document.querySelectorAll('.question-group').forEach(group => {
+                    group.style.display = 'none';
+                });
+                
+                // Hide submit button and container
+                const submitBtn = document.getElementById('submit-btn');
+                if (submitBtn) {
+                    submitBtn.style.display = 'none';
+                }
+                const submitContainer = document.querySelector('.submit-container');
+                if (submitContainer) {
+                    submitContainer.style.display = 'none';
+                }
+
+                resultDisplay.style.display = 'block';
+                resultDisplay.className = 'result-display result-disqualify';
+                if (reason === 'DEPRESSION_SPECIAL_MESSAGE') {
+                    resultDisplay.innerHTML = `
+                        <div style="font-size: 18px; margin-bottom: 10px;">❌ Not Eligible for Treatment</div>
+                        <div style="text-align:left; max-width:720px; margin:0 auto; font-size: 14px; font-weight: normal; line-height:1.5;">
+                            <p><strong>We care about your safety.</strong></p>
+                            <p>Because you indicated that you are feeling depressed or having thoughts of suicide, you are not eligible to continue with this program/medication at this time.</p>
+                            <p>You are not alone, and help is available:</p>
+                            <ul style="margin-left: 18px;">
+                                <li>Call or text 988 to connect with the Suicide & Crisis Lifeline.</li>
+                                <li>If you are in immediate danger of harming yourself, call 911 or go to the nearest Emergency Department.</li>
+                            </ul>
+                            <p>Please reach out to a trusted family member, friend, or mental health professional today.</p>
+                            <p>Your wellbeing is our top priority.</p>
+                        </div>
+                        <div style="margin-top: 16px; text-align:center;">
+                            <button id="start-over" style="background:black;color:white;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;">Start Over</button>
+                        </div>
+                    `;
+                } else {
+                    resultDisplay.innerHTML = `
+                        <div style="font-size: 18px; margin-bottom: 10px;">❌ Not Eligible for Treatment</div>
+                        <div style="font-size: 14px; font-weight: normal;">Thank you for starting your assessment - unfortunately, you don't qualify because ${reason}</div>
+                        <div style="margin-top: 16px;">
+                            <button id="start-over" style="background:black;color:white;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;">Start Over</button>
+                        </div>
+                    `;
+                }
+                resultDisplay.scrollIntoView({ behavior: 'smooth' });
+
+                // Disable all form inputs to prevent further changes
+                const inputs = form.querySelectorAll('input, textarea, button');
+                inputs.forEach(el => { el.disabled = true; });
+                
+                // Re-enable the Start Over button after it's created
+                setTimeout(() => {
+                    const startOverBtn = document.getElementById('start-over');
+                    if (startOverBtn) {
+                        startOverBtn.disabled = false;
+                    }
+                }, 100);
+            }
+
+            function setupEarlyDisqualifyMonitoring() {
+                const disqualifierSelectors = [
+                    'input[name="date_of_birth"]',
+                    'input[name="pregnancy"]',
+                    'input[name="depression"]',
+                    'input[name="chemotherapy"]',
+                    'input[name="cancer"]',
+                    'input[name="athlete"]',
+                    'input[name="thyroid_controlled"]'
+                ].join(',');
+
+                const handler = function() {
+                    const formData = new FormData(form);
+                    const reason = getDisqualifyReason(formData);
+                    if (reason) {
+                        earlyDisqualify(reason);
+                    }
+                };
+
+                const elements = document.querySelectorAll(disqualifierSelectors);
+                if (elements.length > 0) {
+                    elements.forEach(input => {
+                        input.addEventListener('change', handler);
+                    });
+                }
+            }
+
+            // Routing logic
+            function determineRouting(formData) {
+                // Get form data for URL parameters
+                const name = encodeURIComponent(formData.get('full_name') || '');
+                const email = encodeURIComponent(formData.get('email') || '');
+                const phone = encodeURIComponent(formData.get('phone') || '');
+                
+                // Build parameter string including UTMs and tracking data
+                let params = `?name=${name}&email=${email}&phone=${phone}`;
+                
+                // Add UTM parameters if they exist
+                Object.entries(trackingData.utm_params).forEach(([key, value]) => {
+                    if (value) {
+                        params += `&${key}=${encodeURIComponent(value)}`;
+                    }
+                });
+                
+                // Add GHL data if available
+                Object.entries(trackingData.ghl_data).forEach(([key, value]) => {
+                    if (value) {
+                        params += `&${key}=${encodeURIComponent(value)}`;
+                    }
+                });
+                
+                // Add any additional parameters
+                Object.entries(trackingData.additional_params).forEach(([key, value]) => {
+                    if (value) {
+                        params += `&${key}=${encodeURIComponent(value)}`;
+                    }
+                });
+                
+                // Check for DISQUALIFY conditions
                 const reason = getDisqualifyReason(formData);
                 if (reason) {
-                    earlyDisqualify(reason);
+                    return {
+                        outcome: 'DISQUALIFY',
+                        redirectUrl: '{{custom_values.root_domain}}/thankyou'
+                    };
                 }
-            };
 
-            document.querySelectorAll(disqualifierSelectors).forEach(input => {
-                input.addEventListener('change', handler);
-            });
-        }
+                // FLAG conditions
+                const flagConditions = [
+                    formData.get('current_sermorelin') === 'yes',
+                    (formData.get('thyroid') === 'yes' && formData.get('thyroid_controlled') === 'yes')
+                ];
 
-        // Routing logic
-        function determineRouting(formData) {
-            // Get form data for URL parameters
-            const name = encodeURIComponent(formData.get('full_name') || '');
-            const email = encodeURIComponent(formData.get('email') || '');
-            const phone = encodeURIComponent(formData.get('phone') || '');
-            
-            // Build parameter string including UTMs and tracking data
-            let params = `?name=${name}&email=${email}&phone=${phone}`;
-            
-            // Add UTM parameters if they exist
-            Object.entries(trackingData.utm_params).forEach(([key, value]) => {
-                if (value) {
-                    params += `&${key}=${encodeURIComponent(value)}`;
+                if (flagConditions.some(condition => condition)) {
+                    return {
+                        outcome: 'FLAG',
+                        redirectUrl: `{{custom_values.root_domain}}/hormones-fee${params}`
+                    };
                 }
-            });
-            
-            // Add GHL data if available
-            Object.entries(trackingData.ghl_data).forEach(([key, value]) => {
-                if (value) {
-                    params += `&${key}=${encodeURIComponent(value)}`;
-                }
-            });
-            
-            // Add any additional parameters
-            Object.entries(trackingData.additional_params).forEach(([key, value]) => {
-                if (value) {
-                    params += `&${key}=${encodeURIComponent(value)}`;
-                }
-            });
-            
-            // Check for DISQUALIFY conditions (hard stops)
-            const disqualifyConditions = [
-                formData.get('pregnancy') === 'yes',
-                formData.get('depression') === 'yes',
-                formData.get('chemotherapy') === 'yes',
-                formData.get('cancer') === 'yes',
-                formData.get('athlete') === 'yes',
-                (formData.get('thyroid') === 'yes' && formData.get('thyroid_controlled') === 'no')
-            ];
 
-            if (disqualifyConditions.some(condition => condition)) {
+                // Default to PROCEED
                 return {
-                    outcome: 'DISQUALIFY',
-                    redirectUrl: '{{custom_values.root_domain}}/thankyou'
-                };
-            }
-
-            // FLAG conditions (require consultation but can proceed)
-            const flagConditions = [
-                formData.get('current_sermorelin') === 'yes',
-                (formData.get('thyroid') === 'yes' && formData.get('thyroid_controlled') === 'yes')
-            ];
-
-            if (flagConditions.some(condition => condition)) {
-                return {
-                    outcome: 'FLAG',
+                    outcome: 'PROCEED',
                     redirectUrl: `{{custom_values.root_domain}}/hormones-fee${params}`
                 };
             }
 
-            // PROCEED if no contraindications
-            return {
-                outcome: 'PROCEED',
-                redirectUrl: `{{custom_values.root_domain}}/hormones-fee${params}`
-            };
-        }
+            // Webhook sender
+            function sendWebhook(submissionData) {
+                console.log('Sending form submission webhook:', submissionData);
+                fetch('https://locumtele.app.n8n.cloud/webhook/patient-screener', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(submissionData)
+                })
+                .then(response => {
+                    console.log('Form webhook response:', response.status, response.statusText);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Form webhook success:', data);
+                })
+                .catch(error => {
+                    console.error('Form webhook error:', error);
+                });
+            }
 
-        // Trigger GHL redirect function
-        function triggerGHLRedirect(redirectUrl) {
-            // Dispatch custom event with the specific redirect URL
-            const redirectEvent = new CustomEvent('ghlRedirect', {
-                detail: { 
-                    category: 'hormones',
-                    formType: 'sermorelin',
-                    redirectUrl: redirectUrl 
-                }
-            });
-            window.dispatchEvent(redirectEvent);
-            
-            // Fallback direct redirect if footer code doesn't handle it
-            setTimeout(function() {
-                if (typeof window.redirectToURL === 'function') {
-                    window.redirectToURL(redirectUrl);
-                } else {
-                    window.location.href = redirectUrl;
-                }
-            }, 500);
-        }
+            // Trigger GHL redirect function
+            function triggerGHLRedirect(redirectUrl) {
+                // Dispatch custom event with the specific redirect URL
+                const redirectEvent = new CustomEvent('ghlRedirect', {
+                    detail: { 
+                        category: 'hormones',
+                        formType: 'sermorelin',
+                        redirectUrl: redirectUrl 
+                    }
+                });
+                window.dispatchEvent(redirectEvent);
+                
+                // Fallback direct redirect if footer code doesn't handle it
+                setTimeout(function() {
+                    if (typeof window.redirectToURL === 'function') {
+                        window.redirectToURL(redirectUrl);
+                    } else {
+                        window.location.href = redirectUrl;
+                    }
+                }, 500);
+            }
 
-        // Form submission handler
-        form.addEventListener('submit', function(e) {
-            console.log('Form submit event triggered!');
-            e.preventDefault();
-            
-            const formData = new FormData(form);
-            console.log('Form data collected:', Object.fromEntries(formData.entries()));
-            const result = determineRouting(formData);
-            console.log('Routing result:', result);
+            // Form submission handler
+            form.addEventListener('submit', function(e) {
+                console.log('Form submit event triggered!');
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                console.log('Form data collected:', Object.fromEntries(formData.entries()));
+                const result = determineRouting(formData);
+                console.log('Routing result:', result);
 
-            // Prepare data for webhook
-            const submissionData = {
-                form_type: 'Sermorelin_Screening',
-                timestamp: new Date().toISOString(),
-                routing_outcome: result.outcome,
-                responses: Object.fromEntries(formData.entries()),
-                tracking_data: trackingData
-            };
+                // Prepare data for webhook
+                const submissionData = {
+                    form_type: 'Sermorelin_Screening',
+                    timestamp: new Date().toISOString(),
+                    routing_outcome: result.outcome,
+                    responses: Object.fromEntries(formData.entries()),
+                    tracking_data: trackingData
+                };
 
-            // Send webhook for ALL form submissions
-            console.log('Sending form submission webhook:', submissionData);
-            fetch('https://locumtele.app.n8n.cloud/webhook/patient-screener', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(submissionData)
-            })
-            .then(response => {
-                console.log('Form webhook response:', response.status, response.statusText);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Form webhook success:', data);
+                // Send webhook for ALL form submissions
+                sendWebhook(submissionData);
+
                 // Only redirect if PROCEED (qualify)
                 if (result.outcome === 'PROCEED') {
-                    triggerGHLRedirect(result.redirectUrl);
-                }
-            })
-            .catch(error => {
-                console.error('Form webhook error:', error);
-                // On error, do not redirect unless qualify
-                if (result.outcome === 'PROCEED') {
-                    triggerGHLRedirect(result.redirectUrl);
+                    // Send event to footer instead of direct redirect
+                    const redirectEvent = new CustomEvent('ghlRedirect', {
+                        detail: { 
+                            category: 'hormones',
+                            formType: 'sermorelin'
+                        }
+                    });
+                    window.dispatchEvent(redirectEvent);
                 }
             });
-        });
 
-        // Initialize form
-        setupFollowUpQuestions();
-        setupEarlyDisqualifyMonitoring();
-        
-        // Event delegation for Start Over button
-        document.addEventListener('click', function(e) {
-            if (e.target && e.target.id === 'start-over') {
-                // Re-enable all inputs and reset form
-                const allInputs = form.querySelectorAll('input, textarea, button');
-                allInputs.forEach(el => { el.disabled = false; });
-                form.reset();
-                
-                // Show all sections
-                document.querySelectorAll('.question-group').forEach(group => {
-                    group.style.display = 'block';
-                });
-                
-                // Show submit button and container
-                const submitBtn = document.getElementById('submit-btn');
-                if (submitBtn) {
-                    submitBtn.style.display = '';
+            // Initialize form
+            setupFollowUpQuestions();
+            setupEarlyDisqualifyMonitoring();
+            
+            // Event delegation for Start Over button
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.id === 'start-over') {
+                    // Re-enable all inputs and reset form
+                    const allInputs = form.querySelectorAll('input, textarea, button');
+                    allInputs.forEach(el => { el.disabled = false; });
+                    form.reset();
+                    
+                    // Show all sections
+                    document.querySelectorAll('.question-group').forEach(group => {
+                        group.style.display = 'block';
+                    });
+                    
+                    // Show submit button and container
+                    const submitBtn = document.getElementById('submit-btn');
+                    if (submitBtn) {
+                        submitBtn.style.display = '';
+                    }
+                    const submitContainer = document.querySelector('.submit-container');
+                    if (submitContainer) {
+                        submitContainer.style.display = '';
+                    }
+                    
+                    // Hide dynamic blocks
+                    const followUpBlocks = document.querySelectorAll('.follow-up');
+                    followUpBlocks.forEach(block => block.classList.remove('show'));
+                    
+                    // Clear result display
+                    resultDisplay.style.display = 'none';
+                    resultDisplay.innerHTML = '';
                 }
-                const submitContainer = document.querySelector('.submit-container');
-                if (submitContainer) {
-                    submitContainer.style.display = '';
-                }
-                
-                // Hide dynamic blocks
-                const followUpBlocks = document.querySelectorAll('.follow-up');
-                followUpBlocks.forEach(block => block.classList.remove('show'));
-                
-                // Clear result display
-                resultDisplay.style.display = 'none';
-                resultDisplay.innerHTML = '';
-            }
-        });
+            });
         
         }); // End DOMContentLoaded
     </script>
