@@ -30,6 +30,16 @@
         // Update page title and form title dynamically
         document.title = `${CONFIG.screener} Assessment`;
         document.getElementById('dynamic-title').textContent = `${CONFIG.screener} Assessment`;
+        
+        // Update subtitle based on screener type
+        const categoryMap = {
+            'GLP1': 'weight loss',
+            'NAD': 'anti-aging',
+            'Sermorelin': 'hormone optimization',
+            'Testosterone': 'hormone optimization'
+        };
+        const category = categoryMap[CONFIG.screener] || 'health';
+        document.querySelector('.subtitle').textContent = `Complete your personalized ${category} assessment`;
 
         async function loadQuestions() {
             try {
