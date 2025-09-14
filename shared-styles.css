@@ -188,39 +188,6 @@ body {
     font-size: 16px;
 }
 
-.alcohol-options {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-}
-
-.alcohol-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 15px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: white;
-}
-
-.alcohol-option:hover {
-    background: #f0f0f0;
-    border-color: #999;
-}
-
-.alcohol-option input[type="radio"] {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-}
-
-.alcohol-option label {
-    font-size: 15px;
-    cursor: pointer;
-}
 
 .follow-up {
     margin-top: 15px;
@@ -347,10 +314,6 @@ body {
         gap: 10px;
     }
     
-    .alcohol-options { 
-        grid-template-columns: 1fr !important;
-        gap: 10px;
-    }
     
     .sub-questions.two-col,
     .sub-questions.three-col {
@@ -364,8 +327,7 @@ body {
     }
     
     .radio-option,
-    .checkbox-option,
-    .alcohol-option {
+    .checkbox-option {
         padding: 12px;
     }
     
@@ -436,8 +398,7 @@ body {
     }
     
     .checkbox-option label,
-    .radio-option label,
-    .alcohol-option label {
+    .radio-option label {
         font-size: 14px;
     }
     
@@ -456,7 +417,4 @@ body {
         grid-template-columns: repeat(2, 1fr) !important;
     }
     
-    .alcohol-options {
-        grid-template-columns: repeat(2, 1fr) !important;
-    }
 }
