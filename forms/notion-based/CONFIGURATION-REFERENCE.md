@@ -36,6 +36,86 @@
 | `{{custom_values.root_domain}}` | Your domain | `https://yourclinic.com` |
 | `{{custom_values.private}}` | Private value | `internal_value` |
 
+## 📋 **GHL Footer Tracking Code**
+
+### **Required Footer Code**
+Add this code to your GoHighLevel site footer in **Website Settings > Footer Code**:
+
+```html
+<!-- GHL Footer Redirect Code for Medical Screening Forms -->
+<!-- Add this to your GHL site footer in Website Settings > Footer Code -->
+<!-- Supports category-based redirects: weightloss, antiaging, sexual health, hormone, hair and skin -->
+
+<script>
+    // GHL Medical Form Redirect Handler
+    (function() {
+        'use strict';
+        
+        // Capture location values from GHL merge fields
+        const locationId   = "{{location.id}}";
+        const locationName = "{{location.name}}";
+        const integration = "{{custom_values.private}}";
+        const rootdomain = "{{ custom_values.root_domain }}";
+    
+        // Define redirect URLs using GHL custom values by category
+        const redirectUrls = {
+            weightloss: `${rootdomain}/weightloss-fee`,
+            antiaging: `${rootdomain}/antiaging-fee`,
+            sexualHealth: `${rootdomain}/sexualhealth-fee`,
+            hormones: `${rootdomain}/hormone-fee`,
+            hairSkin: `${rootdomain}/hairandskin-fee`,
+        };
+        
+        // Function to perform redirect
+        function redirectToConsult(category) {
+            const baseUrl = redirectUrls[category];
+            if (baseUrl) {
+                // Append location ID and name as query parameters
+                const url = `${baseUrl}?location_id=${encodeURIComponent(locationId)}&location_name=${encodeURIComponent(locationName)}`;
+                console.log(`Redirecting to ${category} consult: ${url}`);
+                window.location.href = url;
+            } else {
+                console.error(`Unknown category: ${category}`);
+            }
+        }
+        
+        // Make function globally available for direct calls
+        window.redirectToConsult = redirectToConsult;
+        
+        // Listen for custom events from forms
+        window.addEventListener('ghlRedirect', function(event) {
+            const category = event.detail?.category || event.detail?.formType;
+            if (category) {
+                // Add small delay to ensure webhook completes
+                setTimeout(function() {
+                    redirectToConsult(category);
+                }, 500);
+            }
+        });
+        
+        // Alternative: Listen for form submissions and detect category
+        document.addEventListener('submit', function(event) {
+            const form = event.target;
+            
+            // Check for category data attribute or form class
+            const category = form.dataset.category || form.className.match(/category-(\w+)/)?.[1];
+            if (category && redirectUrls[category]) {
+                setTimeout(function() {
+                    redirectToConsult(category);
+                }, 1000);
+            }
+        });
+        
+    })();
+</script>
+```
+
+### **How It Works**
+1. **Captures location data** from GHL merge fields (`{{location.id}}`, `{{location.name}}`, etc.)
+2. **Listens for `ghlRedirect` events** from embedded forms
+3. **Maps categories** to appropriate redirect URLs
+4. **Handles redirects** automatically when forms complete
+
 ## 🚀 **Deployment**
 
 ### **GitHub Pages Setup**
