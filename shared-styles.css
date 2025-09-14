@@ -104,16 +104,17 @@ body.questions-loaded {
     margin-bottom: 0;
 }
 
+/* Radio buttons now use checkbox styling */
 .radio-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin-bottom: 15px;
 }
 
 .radio-option {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     padding: 15px;
     border: 1px solid #e0e0e0;
@@ -121,8 +122,6 @@ body.questions-loaded {
     cursor: pointer;
     transition: all 0.2s ease;
     background: white;
-    flex: 1;
-    min-width: 0;
 }
 
 .radio-option:hover {
@@ -133,12 +132,14 @@ body.questions-loaded {
 .radio-option input[type="radio"] {
     width: 20px;
     height: 20px;
+    margin-top: 2px;
     flex-shrink: 0;
 }
 
 .radio-option label {
-    font-size: 15px;
     cursor: pointer;
+    font-size: 15px;
+    line-height: 1.4;
 }
 
 .checkbox-group {
@@ -373,8 +374,8 @@ body.questions-loaded {
     }
     
     .radio-group {
-        flex-direction: column;
-        gap: 12px;
+        grid-template-columns: 1fr !important;
+        gap: 10px;
     }
     
     .radio-option,
@@ -474,7 +475,8 @@ body.questions-loaded {
         grid-template-columns: repeat(2, 1fr) !important;
     }
     
-    .checkbox-group {
+    .checkbox-group,
+    .radio-group {
         grid-template-columns: repeat(2, 1fr) !important;
     }
 }
