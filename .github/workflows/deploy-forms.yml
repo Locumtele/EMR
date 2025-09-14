@@ -27,13 +27,6 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Replace Notion Secret
-        run: |
-          # Replace placeholder with actual secret
-          sed -i "s/YOUR_NOTION_SECRET_HERE/${{ secrets.YOUR_NOTION_SECRET_HERE }}/g" forms/notion-based/dynamic-form.html
-          
-          # Also update configuration reference
-          sed -i "s/YOUR_NOTION_SECRET_HERE/${{ secrets.YOUR_NOTION_SECRET_HERE }}/g" forms/notion-based/CONFIGURATION-REFERENCE.md
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
