@@ -104,6 +104,18 @@ function processN8NData(data) {
     return data;
   }
 
+  // If it's a single config object with content string, parse it
+  if (data.screener && data.content) {
+    try {
+      const parsedContent = JSON.parse(data.content);
+      console.log(`✅ Parsed single config: ${data.screener}`);
+      return [parsedContent];
+    } catch (error) {
+      console.error('❌ Error parsing content:', error.message);
+      return [];
+    }
+  }
+
   // If it's raw webhook data, extract from the structure
   if (data.body || data.json || data.configs) {
     const actualData = data.body || data.json || data.configs;
@@ -119,30 +131,34 @@ function processN8NData(data) {
 // Auto-commit changes to git
 async function commitChanges(files) {
   return new Promise((resolve, reject) => {
-    const commands = [
-      'git add configs/',
-      'git config user.name "Codespace Auto-Update"',
-      'git config user.email "codespace@github.com"',
-      `git commit -m "Auto-update form configurations
+    // Add a small delay to avoid git lock conflicts
+    setTimeout(() => {
+      const commands = [
+        'git add configs/',
+        'git config user.name "Codespace Auto-Update"',
+        'git config user.email "codespace@github.com"',
+        `git commit -m "Auto-update form configurations
 
 📋 Updated ${files.length} screener configs: ${files.join(', ')}
 🤖 Generated from Notion webhook via Codespace
 📅 ${new Date().toISOString()}"`,
-      'git push origin main'
-    ];
+        'git push origin main'
+      ];
 
-    const fullCommand = commands.join(' && ');
+      const fullCommand = commands.join(' && ');
 
-    exec(fullCommand, (error, stdout, stderr) => {
-      if (error) {
-        console.log('⚠️ Git commit warning (might be no changes):', error.message);
-        resolve(); // Don't reject, as this might just mean no changes
-      } else {
-        console.log('🚀 Successfully committed and pushed changes');
-        console.log('Git output:', stdout);
-      }
-      resolve();
-    });
+      exec(fullCommand, (error, stdout, stderr) => {
+        if (error) {
+          console.log('⚠️ Git commit warning (might be no changes):', error.message);
+          // Don't reject, as this might just mean no changes or git lock
+          resolve();
+        } else {
+          console.log('🚀 Successfully committed and pushed changes');
+          console.log('Git output:', stdout);
+        }
+        resolve();
+      });
+    }, 1000); // 1 second delay
   });
 }
 

@@ -1,6 +1,6 @@
 {
-  "lastUpdate": "2025-09-14T12:26:12.851Z",
-  "totalScreeners": 0,
-  "screeners": [],
-  "files": []
+  "lastUpdate": "2025-09-14T13:08:57.081Z",
+  "totalScreeners": 3,
+  "screeners": ["GLP1", "NAD", "SEMORELIN"],
+  "files": ["glp1.json", "nad.json", "semorelin.json"]
 }

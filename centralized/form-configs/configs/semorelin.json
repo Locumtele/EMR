@@ -1,0 +1,177 @@
+{
+  "screener": "Semorelin",
+  "category": "Hormone",
+  "lastUpdated": "2025-09-14T13:08:57.081Z",
+  "totalQuestions": 14,
+  "questions": [
+    {
+      "id": 1,
+      "section": "Patient Profile",
+      "text": "Full Name",
+      "type": "text",
+      "safe": ["any_text"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always",
+      "category": "Hormone"
+    },
+    {
+      "id": 2,
+      "section": "Patient Profile",
+      "text": "Email Address",
+      "type": "email",
+      "safe": ["any_email"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always",
+      "category": "Hormone"
+    },
+    {
+      "id": 3,
+      "section": "Patient Profile",
+      "text": "Phone Number",
+      "type": "phone",
+      "safe": ["any_phone"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always",
+      "category": "Hormone"
+    },
+    {
+      "id": 4,
+      "section": "Patient Profile",
+      "text": "Date of Birth",
+      "type": "date",
+      "safe": ["18+ years old"],
+      "flag": [],
+      "disqualify": ["under_18"],
+      "disqualifyMessage": "You must be 18 years or older to use this service.",
+      "showCondition": "always",
+      "category": "Hormone"
+    },
+    {
+      "id": 5,
+      "section": "Patient Profile",
+      "text": "Gender",
+      "type": "radio",
+      "safe": ["male", "female"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always",
+      "category": "Hormone"
+    },
+    {
+      "id": 6,
+      "section": "Patient Profile",
+      "text": "Are you currently pregnant or breastfeeding?",
+      "type": "radio",
+      "safe": ["no"],
+      "flag": [],
+      "disqualify": ["yes"],
+      "disqualifyMessage": "For your safety and your baby's wellbeing, Sermorelin is not recommended during pregnancy or breastfeeding.",
+      "showCondition": "if_gender_female",
+      "category": "Hormone"
+    },
+    {
+      "id": 7,
+      "section": "Patient Profile",
+      "text": "Height (feet and inches)",
+      "type": "number",
+      "safe": ["any_valid"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always",
+      "category": "Hormone"
+    },
+    {
+      "id": 8,
+      "section": "Patient Profile",
+      "text": "Weight (pounds)",
+      "type": "number",
+      "safe": ["any_valid"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always",
+      "category": "Hormone"
+    },
+    {
+      "id": 9,
+      "section": "Assessment",
+      "text": "Have you previously received Sermorelin injections?",
+      "type": "radio",
+      "safe": ["yes", "no"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always",
+      "category": "Hormone"
+    },
+    {
+      "id": 10,
+      "section": "Assessment",
+      "text": "Are you currently receiving Sermorelin injections elsewhere?",
+      "type": "radio",
+      "safe": ["no"],
+      "flag": ["yes"],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always",
+      "category": "Hormone"
+    },
+    {
+      "id": 11,
+      "section": "Assessment",
+      "text": "Do you currently have cancer or a history of cancer?",
+      "type": "radio",
+      "safe": ["no"],
+      "flag": [],
+      "disqualify": ["yes"],
+      "disqualifyMessage": "For your safety, Sermorelin therapy is not appropriate for individuals with current or previous cancer. Please discuss alternative wellness approaches with your oncologist.",
+      "showCondition": "always",
+      "category": "Hormone"
+    },
+    {
+      "id": 12,
+      "section": "Assessment",
+      "text": "Are you a professional athlete?",
+      "type": "radio",
+      "safe": ["no"],
+      "flag": [],
+      "disqualify": ["yes"],
+      "disqualifyMessage": "Sermorelin is prohibited by the World Anti-Doping Agency (WADA) for competitive athletes. We cannot provide this treatment to professional athletes.",
+      "showCondition": "always",
+      "category": "Hormone"
+    },
+    {
+      "id": 13,
+      "section": "Medical History",
+      "text": "Do you have any history of thyroid issues (such as hypothyroidism)?",
+      "type": "radio",
+      "safe": ["no", "controlled_thyroid"],
+      "flag": ["uncontrolled_thyroid"],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always",
+      "category": "Hormone"
+    },
+    {
+      "id": 14,
+      "section": "Medical History",
+      "text": "Do you have any allergies to medications, foods, or other substances?",
+      "type": "text",
+      "safe": ["any_text"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always",
+      "category": "Hormone"
+    }
+  ]
+}
+  
