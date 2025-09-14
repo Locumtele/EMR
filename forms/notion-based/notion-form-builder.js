@@ -235,7 +235,8 @@ class NotionFormBuilder {
 
     // Generate radio input
     generateRadioInput(question, questionId, inputName) {
-        const options = this.parseOptions(question.safe);
+        // For radio buttons, we need to get all possible options, not just safe ones
+        const options = this.getAllOptions(question);
         const required = question.disqualify || question.safe !== 'any_text' ? 'required' : '';
         
         let html = '<div class="radio-group">';
@@ -255,7 +256,8 @@ class NotionFormBuilder {
 
     // Generate checkbox input
     generateCheckboxInput(question, questionId, inputName) {
-        const options = this.parseOptions(question.safe);
+        // For checkboxes, we need to get all possible options, not just safe ones
+        const options = this.getAllOptions(question);
         const required = question.disqualify || question.safe !== 'any_text' ? 'required' : '';
         
         let html = '<div class="checkbox-group">';
@@ -289,6 +291,47 @@ class NotionFormBuilder {
     generateTextareaInput(question, questionId, inputName) {
         const required = question.disqualify || question.safe !== 'any_text' ? 'required' : '';
         return `<textarea class="textarea-input" id="${questionId}" name="${inputName}" ${required} placeholder="Enter details"></textarea>`;
+    }
+
+    // Get all possible options for a question (combines safe, disqualify, and flag options)
+    getAllOptions(question) {
+        const allOptions = new Set();
+        
+        // Add safe options
+        if (question.safe) {
+            const safeOptions = this.parseOptions(question.safe);
+            safeOptions.forEach(opt => allOptions.add(opt));
+        }
+        
+        // Add disqualify options
+        if (question.disqualify) {
+            const disqualifyOptions = this.parseOptions(question.disqualify);
+            disqualifyOptions.forEach(opt => allOptions.add(opt));
+        }
+        
+        // Add flag options
+        if (question.flag) {
+            const flagOptions = this.parseOptions(question.flag);
+            flagOptions.forEach(opt => allOptions.add(opt));
+        }
+        
+        // If no options found, use safe as fallback
+        if (allOptions.size === 0 && question.safe) {
+            const safeOptions = this.parseOptions(question.safe);
+            safeOptions.forEach(opt => allOptions.add(opt));
+        }
+        
+        // Convert Set to Array and sort
+        const options = Array.from(allOptions);
+        
+        // Sort options to put "No" first, "Yes" second, then alphabetically
+        return options.sort((a, b) => {
+            if (a === 'No') return -1;
+            if (b === 'No') return 1;
+            if (a === 'Yes') return -1;
+            if (b === 'Yes') return 1;
+            return a.localeCompare(b);
+        });
     }
 
     // Parse options from safe values (dynamic from Notion)
