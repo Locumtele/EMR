@@ -100,28 +100,27 @@ app.post('/webhook/update-configs', async (req, res) => {
   }
 });
 
-// Process raw Notion webhook data (if N8N sends it unprocessed)
-async function processNotionData(data) {
-  // This function would handle raw Notion webhook data
-  // For now, assume N8N sends processed data
-  console.log('📤 Processing raw Notion data...');
-  return [];
-}
+ // Process N8N processed data
+  function processN8NData(data) {
+    console.log('📋 Processing N8N data structure...');
 
-// Auto-commit changes to git
-async function commitChanges(files) {
-  return new Promise((resolve, reject) => {
-    const commands = [
-      'git add configs/',
-      'git config user.name "Codespace Auto-Update"',
-      'git config user.email "codespace@github.com"',
-      `git commit -m "Auto-update form configurations
+    // Check if data is already in config format from N8N
+    if (Array.isArray(data) && data[0]?.screener) {
+      console.log(`✅ Found ${data.length} pre-processed configs`);
+      return data;
+    }
 
-📋 Updated ${files.length} screener configs: ${files.join(', ')}
-🤖 Generated from Notion webhook via Codespace
-📅 ${new Date().toISOString()}"`,
-      'git push origin main'
-    ];
+    // If it's raw webhook data, extract from the structure
+    if (data.body || data.json || data.configs) {
+      const actualData = data.body || data.json || data.configs;
+      if (Array.isArray(actualData)) {
+        return actualData;
+      }
+    }
+
+    console.log('⚠️ Unknown data structure:', JSON.stringify(data, null, 2));
+    return [];
+  }
 
     const fullCommand = commands.join(' && ');
 
