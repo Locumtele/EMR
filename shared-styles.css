@@ -80,7 +80,8 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     background: white;
-    min-width: fit-content;
+    flex: 1;
+    min-width: 0;
 }
 
 .radio-option:hover {

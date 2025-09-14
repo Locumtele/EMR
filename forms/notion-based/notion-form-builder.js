@@ -297,13 +297,17 @@ class NotionFormBuilder {
                 </div>
             `;
         } else {
-            options.forEach((option, index) => {
+            // Sort options to put "None" last
+            const sortedOptions = this.sortOptionsForCheckbox(options);
+            
+            sortedOptions.forEach((option, index) => {
                 const optionId = `${questionId}_${index}`;
                 const value = this.sanitizeValue(option);
+                const label = option === 'None' ? 'None of the above' : option;
                 html += `
                     <div class="checkbox-option">
                         <input type="checkbox" id="${optionId}" name="${inputName}" value="${value}">
-                        <label for="${optionId}">${option}</label>
+                        <label for="${optionId}">${label}</label>
                     </div>
                 `;
             });
@@ -356,6 +360,17 @@ class NotionFormBuilder {
             if (b === 'No') return 1;
             if (a === 'Yes') return -1;
             if (b === 'Yes') return 1;
+            return a.localeCompare(b);
+        });
+    }
+
+    // Sort options for checkboxes to put "None" last
+    sortOptionsForCheckbox(options) {
+        return options.sort((a, b) => {
+            // Put "None" at the end
+            if (a === 'None') return 1;
+            if (b === 'None') return -1;
+            // Sort everything else alphabetically
             return a.localeCompare(b);
         });
     }
