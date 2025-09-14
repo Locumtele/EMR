@@ -58,12 +58,31 @@
             }
         }
 
+        function getDefaultPlaceholder(type, text) {
+            const lowerText = text.toLowerCase();
+            if (lowerText.includes('name')) return 'Enter your full name';
+            if (lowerText.includes('email')) return 'Enter your email address';
+            if (lowerText.includes('phone')) return 'Enter your phone number';
+            if (lowerText.includes('address')) return 'Enter your address';
+            if (lowerText.includes('city')) return 'Enter city';
+            if (lowerText.includes('state')) return 'Enter state';
+            if (lowerText.includes('zip')) return 'Enter ZIP code';
+            if (lowerText.includes('age')) return 'Enter your age';
+            if (lowerText.includes('weight')) return 'Enter weight';
+            if (lowerText.includes('height')) return 'Enter height';
+            if (type === 'email') return 'Enter your email address';
+            if (type === 'phone') return 'Enter your phone number';
+            if (type === 'date') return 'MM/DD/YYYY';
+            if (type === 'number') return 'Enter a number';
+            return 'Enter your response';
+        }
+
         function getSampleQuestions() {
             return [
-                { id: 1, section: 'Patient Profile', text: 'Full Name', type: 'text', safe: ['any_text'] },
-                { id: 2, section: 'Patient Profile', text: 'Email Address', type: 'email', safe: ['any_email'] },
-                { id: 3, section: 'Patient Profile', text: 'Phone Number', type: 'phone', safe: ['any_phone'] },
-                { id: 4, section: 'Patient Profile', text: 'Date of Birth', type: 'date', safe: ['18+ years old'] },
+                { id: 1, section: 'Patient Profile', text: 'Full Name', type: 'text', safe: ['any_text'], placeholder: 'Enter your full name' },
+                { id: 2, section: 'Patient Profile', text: 'Email Address', type: 'email', safe: ['any_email'], placeholder: 'Enter your email address' },
+                { id: 3, section: 'Patient Profile', text: 'Phone Number', type: 'phone', safe: ['any_phone'], placeholder: 'Enter your phone number' },
+                { id: 4, section: 'Patient Profile', text: 'Date of Birth', type: 'date', safe: ['18+ years old'], placeholder: 'MM/DD/YYYY' },
                 { id: 5, section: 'Patient Profile', text: 'Gender', type: 'radio', safe: ['male', 'female'] }
             ];
         }
@@ -102,9 +121,21 @@
                         });
                         html += '</div>';
                     } else {
-                        html += `<input class="text-input" type="${q.type}" name="${q.id}" placeholder="${q.placeholder || ''}">`;
+                        const placeholder = q.placeholder || getDefaultPlaceholder(q.type, q.text);
+                        html += `<input class="text-input" type="${q.type}" name="${q.id}" placeholder="${placeholder}">`;
                     }
                     html += '</div>';
+                    
+                    // Add conditional logic for pregnancy question
+                    if (q.text.toLowerCase().includes('pregnant') || q.text.toLowerCase().includes('breastfeeding')) {
+                        html += `<div class="conditional-question" data-show-if="gender=female" style="display: none;">
+                            <div class="question"><label class="question-label">${q.text}</label>
+                                <div class="checkbox-group">`;
+                        [...new Set([...q.safe, ...q.flag, ...q.disqualify])].forEach(opt => {
+                            html += `<div class="checkbox-option"><input type="checkbox" name="${q.id}" value="${opt}"><label>${opt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label></div>`;
+                        });
+                        html += `</div></div></div>`;
+                    }
                 });
                 
                 // Add submit button to the last section
@@ -118,6 +149,27 @@
             document.getElementById('loading').style.display = 'none';
             document.getElementById('form').style.display = 'block';
             document.getElementById('questions').innerHTML = html;
+            
+            // Add conditional logic for showing/hiding questions
+            setupConditionalLogic();
+        }
+
+        function setupConditionalLogic() {
+            // Handle gender selection to show/hide pregnancy question
+            const genderInputs = document.querySelectorAll('input[name="5"]'); // Gender question ID
+            const pregnancyQuestion = document.querySelector('[data-show-if="gender=female"]');
+            
+            genderInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    if (pregnancyQuestion) {
+                        if (this.value === 'female' && this.checked) {
+                            pregnancyQuestion.style.display = 'block';
+                        } else {
+                            pregnancyQuestion.style.display = 'none';
+                        }
+                    }
+                });
+            });
         }
 
         document.getElementById('form').addEventListener('submit', async function(e) {
