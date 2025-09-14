@@ -26,6 +26,8 @@
             screener: new URLSearchParams(window.location.search).get('screener') || 'GLP1',
             webhook: 'https://locumtele.app.n8n.cloud/webhook/notion-questions'
         };
+        
+        let currentQuestions = [];
 
         // Update page title and form title dynamically
         document.title = `${CONFIG.screener} Assessment`;
@@ -60,6 +62,7 @@
                     throw new Error('No questions found in response');
                 }
                 
+                currentQuestions = questions;
                 buildForm(questions);
             } catch (error) {
                 console.error('Error loading questions:', error);
@@ -138,9 +141,13 @@
                     }
                     html += '</div>';
                     
-                    // Add conditional logic for pregnancy question
-                    if (q.text.toLowerCase().includes('pregnant') || q.text.toLowerCase().includes('breastfeeding')) {
-                        html += `<div class="conditional-question" data-show-if="gender=female" style="display: none;">
+                    // Add conditional logic based on showCondition from Notion
+                    if (q.showCondition && q.showCondition !== 'always') {
+                        const conditionClass = `conditional-question-${q.id}`;
+                        const conditionData = `data-show-if="${q.showCondition}"`;
+                        const isInitiallyHidden = q.showCondition.includes('if_gender_female') ? 'style="display: none;"' : '';
+                        
+                        html += `<div class="conditional-question ${conditionClass}" ${conditionData} ${isInitiallyHidden}>
                             <div class="question"><label class="question-label">${q.text}</label>
                                 <div class="checkbox-group">`;
                         [...new Set([...q.safe, ...q.flag, ...q.disqualify])].forEach(opt => {
@@ -167,20 +174,27 @@
         }
 
         function setupConditionalLogic() {
-            // Handle gender selection to show/hide pregnancy question
-            const genderInputs = document.querySelectorAll('input[name="5"]'); // Gender question ID
-            const pregnancyQuestion = document.querySelector('[data-show-if="gender=female"]');
+            // Handle all conditional questions based on showCondition from Notion
+            const conditionalQuestions = document.querySelectorAll('[data-show-if]');
             
-            genderInputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    if (pregnancyQuestion) {
-                        if (this.value === 'female' && this.checked) {
-                            pregnancyQuestion.style.display = 'block';
-                        } else {
-                            pregnancyQuestion.style.display = 'none';
-                        }
-                    }
-                });
+            conditionalQuestions.forEach(question => {
+                const condition = question.getAttribute('data-show-if');
+                
+                if (condition === 'if_gender_female') {
+                    const genderInputs = document.querySelectorAll('input[name="5"]'); // Gender question ID
+                    
+                    genderInputs.forEach(input => {
+                        input.addEventListener('change', function() {
+                            if (this.value === 'female' && this.checked) {
+                                question.style.display = 'block';
+                            } else {
+                                question.style.display = 'none';
+                            }
+                        });
+                    });
+                }
+                // Add more conditions as needed based on your Notion data
+                // e.g., if_tobacco_yes, if_diabetes_yes, etc.
             });
         }
 
@@ -224,8 +238,8 @@
                 errors.push('BMI requirement not met. This program requires a BMI of 25 or higher.');
             }
 
-            // Check for disqualifying conditions
-            const disqualificationResult = checkDisqualifyingConditions(data);
+            // Check for disqualifying conditions using Notion data
+            const disqualificationResult = checkDisqualifyingConditions(data, currentQuestions);
             if (disqualificationResult.disqualified) {
                 errors.push(disqualificationResult.message);
             }
@@ -233,85 +247,30 @@
             return errors;
         }
 
-        function checkDisqualifyingConditions(data) {
-            // Check pregnancy/breastfeeding (only for females)
-            if (data['5'] === 'female' && (data['6'] === 'yes' || data['6'] === 'Yes')) {
-                return {
-                    disqualified: true,
-                    message: 'For the safety of you and your baby, GLP-1 medications are not recommended during pregnancy, while trying to conceive, or while breastfeeding.'
-                };
-            }
-
-            // Check for disqualifying medical conditions (question 10)
-            const disqualifyingConditions = [
-                'diabetes_type1', 'pancreatitis', 'medullary_thyroid', 
-                'men2', 'liver_disease', 'leber_neuropathy'
-            ];
-            
-            for (let condition of disqualifyingConditions) {
-                if (data['10'] && data['10'].includes(condition)) {
+        function checkDisqualifyingConditions(data, questions) {
+            // Check each question for disqualifying responses
+            for (let question of questions) {
+                const questionId = question.id.toString();
+                const userResponse = data[questionId];
+                
+                if (!userResponse || !question.disqualify || question.disqualify.length === 0) {
+                    continue;
+                }
+                
+                // Check if user selected any disqualifying options
+                const selectedOptions = Array.isArray(userResponse) ? userResponse : [userResponse];
+                const hasDisqualifyingResponse = selectedOptions.some(response => 
+                    question.disqualify.includes(response)
+                );
+                
+                if (hasDisqualifyingResponse && question.disqualifyMessage) {
                     return {
                         disqualified: true,
-                        message: 'Based on your medical history, GLP-1 medications may not be safe for you. We recommend discussing weight management options with your healthcare provider.'
+                        message: question.disqualifyMessage
                     };
                 }
             }
-
-            // Check for disqualifying medications (question 11)
-            const disqualifyingMedications = [
-                'abiraterone', 'somatrogon', 'chloroquine', 
-                'insulin', 'other_glp1s'
-            ];
             
-            for (let medication of disqualifyingMedications) {
-                if (data['11'] && data['11'].includes(medication)) {
-                    return {
-                        disqualified: true,
-                        message: 'Your current medications may interact with GLP-1 therapy. Please work with your prescribing doctor to explore safe weight management options that won\'t interfere with your current treatment.'
-                    };
-                }
-            }
-
-            // Check HbA1C >8% (question 12)
-            if (data['12'] === 'yes' || data['12'] === 'Yes') {
-                return {
-                    disqualified: true,
-                    message: 'Your current HbA1C level requires specialized diabetes care. We recommend working with an endocrinologist or your primary care doctor for the best treatment approach.'
-                };
-            }
-
-            // Check family history of thyroid conditions (question 13)
-            if (data['13'] === 'yes' || data['13'] === 'Yes') {
-                return {
-                    disqualified: true,
-                    message: 'Due to your family history of thyroid conditions, GLP-1 medications carry additional risks for you. Please consult with an endocrinologist about safer alternatives.'
-                };
-            }
-
-            // Check chemotherapy (question 14)
-            if (data['14'] === 'yes' || data['14'] === 'Yes') {
-                return {
-                    disqualified: true,
-                    message: 'While receiving cancer treatment, it\'s important to focus on your current therapy. Please discuss weight management goals with your oncology team when appropriate.'
-                };
-            }
-
-            // Check heavy alcohol consumption (question 16)
-            if (data['16'] === '2+_daily') {
-                return {
-                    disqualified: true,
-                    message: 'Regular heavy alcohol consumption can interact dangerously with GLP-1 medications. We recommend discussing safer weight management options with your healthcare provider.'
-                };
-            }
-
-            // Check depression with suicidal ideation (question 20)
-            if (data['20'] === 'yes' || data['20'] === 'Yes') {
-                return {
-                    disqualified: true,
-                    message: 'We take mental health seriously. Please consult with a mental health professional before considering GLP-1 therapy, as these medications can affect mood and mental well-being.'
-                };
-            }
-
             return { disqualified: false, message: '' };
         }
         
