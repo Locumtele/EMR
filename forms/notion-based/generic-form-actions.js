@@ -453,11 +453,23 @@ class GenericFormActions {
             const flagValues = question.flag.split(',');
 
             if (question.inputType === 'checkbox') {
-                const hasFlagValue = values.some(val => flagValues.includes(val));
+                // For checkboxes, check both original and sanitized values
+                const hasFlagValue = values.some(val => {
+                    const sanitizedVal = val.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    return flagValues.includes(val) || flagValues.includes(sanitizedVal) ||
+                           flagValues.some(fv => fv.toLowerCase().replace(/[^a-z0-9]/g, '_') === sanitizedVal);
+                });
                 if (hasFlagValue) return true;
             } else {
+                // For radio buttons, check both original and sanitized values
                 const value = formData.get(inputName);
-                if (flagValues.includes(value)) return true;
+                if (value) {
+                    const sanitizedValue = value.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    if (flagValues.includes(value) || flagValues.includes(sanitizedValue) ||
+                        flagValues.some(fv => fv.toLowerCase().replace(/[^a-z0-9]/g, '_') === sanitizedValue)) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
