@@ -468,8 +468,8 @@
         </form>
     </div>
 
-    <script src="https://locumtele.github.io/EMR/forms/notion-based/notion-form-builder.js"></script>
-    <script src="https://locumtele.github.io/EMR/forms/notion-based/generic-form-actions.js"></script>
+    <script src="notion-form-builder.js"></script>
+    <script src="generic-form-actions.js"></script>
     <script>
         // Configuration
         const SCREENER_TYPE = new URLSearchParams(window.location.search).get('screener') || 'glp1';
@@ -483,13 +483,13 @@
                 console.log('Initializing dynamic form...');
                 
                 // Initialize form builder
-                const formBuilder = new NotionFormBuilder(DATABASE_ID, NOTION_SECRET, N8N_WEBHOOK_URL);
+                const formBuilder = new NotionFormBuilder(NOTION_SECRET, DATABASE_ID);
                 
                 // Build form with questions from Notion
                 const questions = await formBuilder.buildForm(SCREENER_TYPE, 'questions-container');
                 
                 // Initialize form actions with the loaded questions
-                const formActions = new GenericFormActions('dynamicScreeningForm', questions);
+                const formActions = new GenericFormActions('dynamicScreeningForm', SCREENER_TYPE, questions);
                 formActions.initialize();
                 
                 // Hide loading message and show form
