@@ -221,25 +221,30 @@ class NotionFormBuilder {
         let html = `<div class="question" id="question_${questionId}">`;
         html += `<label class="question-label" for="${questionId}">${question.questionText}</label>`;
         
-        switch (question.inputType) {
-            case 'text':
-            case 'email':
-            case 'phone':
-            case 'date':
-                html += this.generateTextInput(question, questionId, inputName);
-                break;
-            case 'number':
-                html += this.generateNumberInput(question, questionId, inputName);
-                break;
-            case 'radio':
-                html += this.generateRadioInput(question, questionId, inputName);
-                break;
-            case 'checkbox':
-                html += this.generateCheckboxInput(question, questionId, inputName);
-                break;
-            case 'textarea':
-                html += this.generateTextareaInput(question, questionId, inputName);
-                break;
+        // Special case for height questions - generate two separate inputs
+        if (question.name.toLowerCase().includes('height') && question.inputType === 'number') {
+            html += this.generateHeightInputs(question, questionId, inputName);
+        } else {
+            switch (question.inputType) {
+                case 'text':
+                case 'email':
+                case 'phone':
+                case 'date':
+                    html += this.generateTextInput(question, questionId, inputName);
+                    break;
+                case 'number':
+                    html += this.generateNumberInput(question, questionId, inputName);
+                    break;
+                case 'radio':
+                    html += this.generateRadioInput(question, questionId, inputName);
+                    break;
+                case 'checkbox':
+                    html += this.generateCheckboxInput(question, questionId, inputName);
+                    break;
+                case 'textarea':
+                    html += this.generateTextareaInput(question, questionId, inputName);
+                    break;
+            }
         }
         
         html += '</div>';
@@ -321,6 +326,23 @@ class NotionFormBuilder {
     generateTextareaInput(question, questionId, inputName) {
         const required = question.disqualify || question.safe !== 'any_text' ? 'required' : '';
         return `<textarea class="textarea-input" id="${questionId}" name="${inputName}" ${required} placeholder="Enter details"></textarea>`;
+    }
+
+    // Generate height inputs (feet and inches)
+    generateHeightInputs(question, questionId, inputName) {
+        const required = question.disqualify || question.safe !== 'any_valid' ? 'required' : '';
+        return `
+            <div class="sub-questions three-col">
+                <div class="sub-question">
+                    <label class="question-label" for="${questionId}_feet">Height (feet)</label>
+                    <input class="text-input" id="${questionId}_feet" name="${inputName}_feet" type="number" min="3" max="8" placeholder="5" ${required}>
+                </div>
+                <div class="sub-question">
+                    <label class="question-label" for="${questionId}_inches">Height (inches)</label>
+                    <input class="text-input" id="${questionId}_inches" name="${inputName}_inches" type="number" min="0" max="11" placeholder="6" ${required}>
+                </div>
+            </div>
+        `;
     }
 
     // Get all possible options for a question (combines safe, disqualify, and flag options)

@@ -222,11 +222,17 @@ class GenericFormActions {
     isBMITooLow(formData) {
         // Look for height and weight fields dynamically
         let heightFeet = 0;
+        let heightInches = 0;
         let weight = 0;
         
-        // Find height field (supports various naming patterns)
+        // Find height fields (supports both single field and separate feet/inches)
         for (const [key, value] of formData.entries()) {
-            if (key.toLowerCase().includes('height') && !isNaN(parseInt(value))) {
+            if (key.toLowerCase().includes('height') && key.toLowerCase().includes('feet') && !isNaN(parseInt(value))) {
+                heightFeet = parseInt(value);
+            } else if (key.toLowerCase().includes('height') && key.toLowerCase().includes('inches') && !isNaN(parseInt(value))) {
+                heightInches = parseInt(value);
+            } else if (key.toLowerCase().includes('height') && !key.includes('_') && !isNaN(parseInt(value))) {
+                // Fallback for single height field
                 heightFeet = parseInt(value);
             }
             if (key.toLowerCase().includes('weight') && !isNaN(parseInt(value))) {
@@ -235,8 +241,9 @@ class GenericFormActions {
         }
         
         if (heightFeet > 0 && weight > 0) {
-            const heightInches = heightFeet * 12;
-            const bmi = (weight / (heightInches * heightInches)) * 703;
+            // Convert to total inches
+            const totalHeightInches = (heightFeet * 12) + heightInches;
+            const bmi = (weight / (totalHeightInches * totalHeightInches)) * 703;
             return bmi < 25;
         }
         return false;
