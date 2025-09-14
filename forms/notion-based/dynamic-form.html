@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Assessment Form</title>
+    <!-- Import shared styles -->
+    <link rel="stylesheet" href="shared-styles.css">
+</head>
+<body>
+    <div class="form-container">
+        <form id="dynamicScreeningForm" class="form-content">
+            <!-- Questions will be loaded here dynamically -->
+            <div id="questions-container">
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 18px; margin-bottom: 10px;">Loading Assessment...</div>
+                    <div style="font-size: 14px; color: #666;">Please wait while we load your personalized questions.</div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="submit-container">
+                <button type="submit" class="nav-button" id="submit-btn" style="display: none;">SUBMIT</button>
+            </div>
+
+            <!-- Result Display -->
+            <div id="result-display" class="result-display"></div>
+        </form>
+    </div>
+
+    <!-- Import form builder and actions -->
+    <script src="notion-form-builder.js"></script>
+    <script src="generic-form-actions.js"></script>
+    
+    <script>
+        // Configuration - Get from URL parameters or meta tags
+        const NOTION_SECRET = 'YOUR_NOTION_SECRET_HERE'; // Replace with your actual Notion secret
+        
+        // Get database ID and screener type from URL or meta tags
+        const urlParams = new URLSearchParams(window.location.search);
+        const databaseId = urlParams.get('db') || document.querySelector('meta[name="notion-database-id"]')?.content || '26e82abf7eae80f5ae8eeb0c7ecc76f0';
+        const screenerType = urlParams.get('screener') || document.querySelector('meta[name="screener-type"]')?.content || 'GLP1';
+        
+        // Update page title dynamically
+        document.title = `${screenerType} Assessment`;
+        
+        // Initialize form
+        async function initializeForm() {
+            try {
+                // Show loading state
+                document.getElementById('questions-container').innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">Loading ${screenerType} Assessment...</div>
+                        <div style="font-size: 14px; color: #666;">Please wait while we load your personalized questions.</div>
+                    </div>
+                `;
+                
+                // Create form builder
+                const formBuilder = new NotionFormBuilder(NOTION_SECRET, databaseId);
+                
+                // Build form with questions from Notion
+                const questions = await formBuilder.buildForm(screenerType, 'questions-container');
+                
+                // Show submit button
+                document.getElementById('submit-btn').style.display = 'block';
+                
+                // Initialize form actions
+                const formActions = new GenericFormActions('dynamicScreeningForm', screenerType, questions);
+                formActions.init();
+                
+                console.log(`Form initialized for ${screenerType} with ${questions.length} questions`);
+                
+            } catch (error) {
+                console.error('Error initializing form:', error);
+                document.getElementById('questions-container').innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 18px; margin-bottom: 10px; color: #e74c3c;">Error Loading ${screenerType} Assessment</div>
+                        <div style="font-size: 14px; color: #666;">There was an error loading the assessment. Please refresh the page or contact support.</div>
+                        <button onclick="location.reload()" style="background: #000; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-top: 15px;">Refresh Page</button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Start the form when page loads
+        document.addEventListener('DOMContentLoaded', initializeForm);
+    </script>
+</body>
+</html>

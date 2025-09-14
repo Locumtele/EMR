@@ -13,16 +13,26 @@ A centralized, dynamic form generation system for medical screenings across mult
 ## 📁 Project Structure
 
 ```
-centralized/form-configs/    # Active dynamic system
-├── configs/                 # Generated JSON form configurations
-├── codespace-webhook.js     # Webhook receiver for updates
-├── ghl-form-snippet.js      # Reusable JavaScript for GHL sites
-└── package.json            # Dependencies
+forms/                       # Form implementations
+├── notion-based/           # New Notion-powered dynamic forms
+│   ├── dynamic-form.html   # Main form (handles all screeners)
+│   ├── notion-form-builder.js # Notion API integration
+│   ├── generic-form-actions.js # Form logic and validation
+│   └── docs/               # Configuration and usage guides
+├── shared-styles.css       # Shared styling for all forms
+└── README.md              # Forms documentation
 
-archive/                     # Historical static files (not in GitHub)
+centralized/form-configs/    # Legacy dynamic system
+├── configs/                # Generated JSON form configurations
+├── codespace-webhook.js    # Webhook receiver for updates
+├── ghl-form-snippet.js     # Reusable JavaScript for GHL sites
+└── package.json           # Dependencies
+
+archive/                     # Historical static files
 ├── calendars/              # Old static calendar embeds
 ├── screeners/              # Old static form files
-└── footer code/            # Old tracking code snippets
+├── footer code/            # Old tracking code snippets
+└── wholeForm.html          # Original monolithic form
 ```
 
 ## 🔧 How It Works
