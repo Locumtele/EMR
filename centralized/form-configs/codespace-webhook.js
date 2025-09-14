@@ -116,6 +116,21 @@ function processN8NData(data) {
   return [];
 }
 
+// Auto-commit changes to git
+async function commitChanges(files) {
+  return new Promise((resolve, reject) => {
+    const commands = [
+      'git add configs/',
+      'git config user.name "Codespace Auto-Update"',
+      'git config user.email "codespace@github.com"',
+      `git commit -m "Auto-update form configurations
+
+📋 Updated ${files.length} screener configs: ${files.join(', ')}
+🤖 Generated from Notion webhook via Codespace
+📅 ${new Date().toISOString()}"`,
+      'git push origin main'
+    ];
+
     const fullCommand = commands.join(' && ');
 
     exec(fullCommand, (error, stdout, stderr) => {
