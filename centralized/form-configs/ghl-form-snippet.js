@@ -4,7 +4,7 @@
 
 // ===== CONFIGURATION =====
 const FORM_CONFIG = {
-    baseUrl: 'https://vertimd.github.io/EMR/centralized/form-configs/configs/',
+    baseUrl: 'https://locumtele.github.io/EMR/centralized/form-configs/configs/',
     submitEndpoint: 'https://locumtele.app.n8n.cloud/webhook/patient-screener'
 };
 

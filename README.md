@@ -41,8 +41,8 @@ archive/                     # Historical static files (not in GitHub)
 4. No manual updates needed - everything is dynamic!
 
 ### Configuration URLs:
-- `https://vertimd.github.io/EMR/centralized/form-configs/configs/glp1.json`
-- `https://vertimd.github.io/EMR/centralized/form-configs/configs/trt.json`
+- `https://locumtele.github.io/EMR/centralized/form-configs/configs/glp1.json`
+- `https://locumtele.github.io/EMR/centralized/form-configs/configs/trt.json`
 - etc.
 
 ## 📋 Setup

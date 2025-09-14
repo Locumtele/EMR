@@ -88,8 +88,8 @@ centralized/form-configs/
 ## GitHub Pages URLs
 
 Once files are committed, they're accessible at:
-- `https://vertimd.github.io/EMR/centralized/form-configs/configs/glp1.json`
-- `https://vertimd.github.io/EMR/centralized/form-configs/configs/sermorelin.json`
+- `https://locumtele.github.io/EMR/centralized/form-configs/configs/glp1.json`
+- `https://locumtele.github.io/EMR/centralized/form-configs/configs/sermorelin.json`
 - etc.
 
 ## Keeping Codespace Running
