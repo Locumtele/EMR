@@ -49,13 +49,33 @@
                     body: JSON.stringify({ screenerType: CONFIG.screener, databaseId: '26e82abf7eae80f5ae8eeb0c7ecc76f0' })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
-                const questions = data[0] ? JSON.parse(data[0].content).questions : getSampleQuestions();
+                const questions = data[0] ? JSON.parse(data[0].content).questions : null;
+                
+                if (!questions || questions.length === 0) {
+                    throw new Error('No questions found in response');
+                }
+                
                 buildForm(questions);
             } catch (error) {
-                console.error('Error:', error);
-                buildForm(getSampleQuestions());
+                console.error('Error loading questions:', error);
+                showErrorMessage(error.message);
             }
+        }
+
+        function showErrorMessage(errorMsg) {
+            document.getElementById('loading').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #e74c3c;">
+                    <h2>Unable to Load Assessment</h2>
+                    <p>There was a technical error loading your personalized questions.</p>
+                    <p style="font-size: 14px; color: #666; margin-top: 20px;">Error: ${errorMsg}</p>
+                    <button onclick="location.reload()" style="background: #000; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-top: 15px;">Try Again</button>
+                </div>
+            `;
         }
 
         function getDefaultPlaceholder(type, text) {
@@ -77,15 +97,6 @@
             return 'Enter your response';
         }
 
-        function getSampleQuestions() {
-            return [
-                { id: 1, section: 'Patient Profile', text: 'Full Name', type: 'text', safe: ['any_text'], placeholder: 'Enter your full name' },
-                { id: 2, section: 'Patient Profile', text: 'Email Address', type: 'email', safe: ['any_email'], placeholder: 'Enter your email address' },
-                { id: 3, section: 'Patient Profile', text: 'Phone Number', type: 'phone', safe: ['any_phone'], placeholder: 'Enter your phone number' },
-                { id: 4, section: 'Patient Profile', text: 'Date of Birth', type: 'date', safe: ['18+ years old'], placeholder: 'MM/DD/YYYY' },
-                { id: 5, section: 'Patient Profile', text: 'Gender', type: 'radio', safe: ['male', 'female'] }
-            ];
-        }
 
         function buildForm(questions) {
             const sections = {};
@@ -172,8 +183,83 @@
             });
         }
 
+        function validateForm() {
+            const errors = [];
+            const formData = new FormData(document.getElementById('form'));
+            const data = Object.fromEntries(formData.entries());
+            
+            // Check required fields
+            const requiredFields = ['1', '2', '3', '4', '5']; // Full name, email, phone, DOB, gender
+            
+            requiredFields.forEach(fieldId => {
+                const value = data[fieldId];
+                if (!value || value.trim() === '') {
+                    const fieldName = getFieldName(fieldId);
+                    errors.push(`${fieldName} is required`);
+                }
+            });
+            
+            // Validate email format
+            if (data['2'] && !isValidEmail(data['2'])) {
+                errors.push('Please enter a valid email address');
+            }
+            
+            // Validate phone format
+            if (data['3'] && !isValidPhone(data['3'])) {
+                errors.push('Please enter a valid phone number');
+            }
+            
+            // Validate age (must be 18+)
+            if (data['4']) {
+                const age = calculateAge(data['4']);
+                if (age < 18) {
+                    errors.push('You must be 18 years or older to use this service');
+                }
+            }
+            
+            return errors;
+        }
+        
+        function getFieldName(fieldId) {
+            const fieldNames = {
+                '1': 'Full Name',
+                '2': 'Email Address', 
+                '3': 'Phone Number',
+                '4': 'Date of Birth',
+                '5': 'Gender'
+            };
+            return fieldNames[fieldId] || 'Field';
+        }
+        
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+        
+        function isValidPhone(phone) {
+            return /^[\+]?[1-9][\d]{0,15}$/.test(phone.replace(/[\s\-\(\)]/g, ''));
+        }
+        
+        function calculateAge(birthDate) {
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
         document.getElementById('form').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Validate form
+            const errors = validateForm();
+            if (errors.length > 0) {
+                alert('Please fix the following errors:\n\n' + errors.join('\n'));
+                return;
+            }
+            
             const formData = new FormData(this);
             const data = Object.fromEntries(formData.entries());
             
