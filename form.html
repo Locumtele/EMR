@@ -197,7 +197,23 @@
         function validateForm() {
             const errors = [];
             const formData = new FormData(document.getElementById('form'));
-            const data = Object.fromEntries(formData.entries());
+            
+            // Properly collect all form data, especially for checkboxes
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                if (data[key]) {
+                    // If key already exists, convert to array or add to array
+                    if (Array.isArray(data[key])) {
+                        data[key].push(value);
+                    } else {
+                        data[key] = [data[key], value];
+                    }
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            console.log('Form data collected:', data); // Debug log
             
             // Check required fields
             const requiredFields = ['1', '2', '3', '4', '5']; // Full name, email, phone, DOB, gender
@@ -244,10 +260,19 @@
         }
 
         function checkDisqualifyingConditions(data, questions) {
+            console.log('Checking disqualifying conditions...');
+            console.log('Questions with disqualify arrays:', questions.filter(q => q.disqualify && q.disqualify.length > 0));
+            
             // Check each question for disqualifying responses
             for (let question of questions) {
                 const questionId = question.id.toString();
                 const userResponse = data[questionId];
+                
+                console.log(`Question ${questionId} (${question.text}):`, {
+                    userResponse,
+                    disqualify: question.disqualify,
+                    disqualifyMessage: question.disqualifyMessage
+                });
                 
                 if (!userResponse || !question.disqualify || question.disqualify.length === 0) {
                     continue;
@@ -259,7 +284,12 @@
                     question.disqualify.includes(response)
                 );
                 
+                console.log(`Question ${questionId} - Selected options:`, selectedOptions);
+                console.log(`Question ${questionId} - Disqualifying options:`, question.disqualify);
+                console.log(`Question ${questionId} - Has disqualifying response:`, hasDisqualifyingResponse);
+                
                 if (hasDisqualifyingResponse && question.disqualifyMessage) {
+                    console.log(`DISQUALIFIED by question ${questionId}:`, question.disqualifyMessage);
                     return {
                         disqualified: true,
                         message: question.disqualifyMessage
@@ -267,6 +297,7 @@
                 }
             }
             
+            console.log('No disqualifying conditions found');
             return { disqualified: false, message: '' };
         }
         
