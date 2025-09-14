@@ -186,13 +186,29 @@ class GenericFormActions {
                 } else {
                     // Check direct value disqualification
                     if (question.inputType === 'checkbox') {
-                        const hasDisqualifyingValue = values.some(val => disqualifyValues.includes(val));
+                        // For checkboxes, we need to check both original and sanitized values
+                        // But exclude "none" values as they should not disqualify
+                        const hasDisqualifyingValue = values.some(val => {
+                            // Skip "none" values - they should not disqualify
+                            if (val === 'none' || val === 'None' || val.toLowerCase().includes('none')) {
+                                return false;
+                            }
+                            const sanitizedVal = val.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                            return disqualifyValues.includes(val) || disqualifyValues.includes(sanitizedVal) ||
+                                   disqualifyValues.some(dv => dv.toLowerCase().replace(/[^a-z0-9]/g, '_') === sanitizedVal);
+                        });
                         if (hasDisqualifyingValue) {
                             return question.disqualifyMessage || 'This condition is not suitable for treatment.';
                         }
                     } else {
-                        if (disqualifyValues.includes(value)) {
-                            return question.disqualifyMessage || 'This condition is not suitable for treatment.';
+                        // For radio buttons, check both original and sanitized values
+                        // But exclude "none" values as they should not disqualify
+                        if (value && value !== 'none' && value !== 'None' && !value.toLowerCase().includes('none')) {
+                            const sanitizedValue = value.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                            if (disqualifyValues.includes(value) || disqualifyValues.includes(sanitizedValue) ||
+                                disqualifyValues.some(dv => dv.toLowerCase().replace(/[^a-z0-9]/g, '_') === sanitizedValue)) {
+                                return question.disqualifyMessage || 'This condition is not suitable for treatment.';
+                            }
                         }
                     }
                 }
