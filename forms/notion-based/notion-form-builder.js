@@ -259,16 +259,28 @@ class NotionFormBuilder {
         const required = question.disqualify || question.safe !== 'any_text' ? 'required' : '';
         
         let html = '<div class="checkbox-group">';
-        options.forEach((option, index) => {
-            const optionId = `${questionId}_${index}`;
-            const value = this.sanitizeValue(option);
+        
+        // Handle special case where "none" is the only safe option
+        if (options.length === 1 && options[0] === 'None') {
             html += `
                 <div class="checkbox-option">
-                    <input type="checkbox" id="${optionId}" name="${inputName}" value="${value}" ${required}>
-                    <label for="${optionId}">${option}</label>
+                    <input type="checkbox" id="${questionId}_none" name="${inputName}" value="none">
+                    <label for="${questionId}_none">None of the above</label>
                 </div>
             `;
-        });
+        } else {
+            options.forEach((option, index) => {
+                const optionId = `${questionId}_${index}`;
+                const value = this.sanitizeValue(option);
+                html += `
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="${optionId}" name="${inputName}" value="${value}">
+                        <label for="${optionId}">${option}</label>
+                    </div>
+                `;
+            });
+        }
+        
         html += '</div>';
         return html;
     }
@@ -282,9 +294,31 @@ class NotionFormBuilder {
     // Parse options from safe values (dynamic from Notion)
     parseOptions(safeValue) {
         if (!safeValue || safeValue === 'any_text' || safeValue === 'any_valid' || safeValue === 'any_email' || safeValue === 'any_phone') {
-            return ['Yes', 'No']; // Default for boolean questions - could be made configurable
+            return ['Yes', 'No']; // Default for boolean questions
         }
-        return safeValue.split(',').map(opt => opt.trim());
+        
+        // Handle special cases
+        if (safeValue === 'none') {
+            return ['None'];
+        }
+        
+        if (safeValue === 'no') {
+            return ['No', 'Yes'];
+        }
+        
+        if (safeValue === 'yes') {
+            return ['Yes', 'No'];
+        }
+        
+        // Split by comma and clean up
+        const options = safeValue.split(',').map(opt => {
+            let cleaned = opt.trim();
+            // Convert underscores to spaces and capitalize
+            cleaned = cleaned.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            return cleaned;
+        });
+        
+        return options;
     }
 
     // Get placeholder text (could be made configurable via Notion)
