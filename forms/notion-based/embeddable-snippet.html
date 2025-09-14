@@ -1,0 +1,112 @@
+<!-- 
+EMBEDDABLE FORM SNIPPET
+========================
+This snippet can be embedded in any GoHighLevel account or website.
+Just update the location-specific values below and paste into your page.
+
+Instructions:
+1. Replace {{location.id}} with the actual location ID
+2. Replace {{location.name}} with the location name
+3. Replace {{custom_values.root_domain}} with your domain
+4. Replace {{custom_values.private}} with any private value
+5. Optionally change the screener type and database ID
+-->
+
+<div id="dynamic-form-container" style="width: 100%; max-width: 800px; margin: 0 auto;">
+    <!-- Form will load here -->
+    <div id="loading" style="text-align: center; padding: 40px; font-family: Arial, sans-serif;">
+        <div style="font-size: 18px; color: #333; margin-bottom: 20px;">Loading your assessment...</div>
+        <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+    </div>
+</div>
+
+<style>
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Hide the loading spinner when form loads */
+    .form-loaded #loading {
+        display: none;
+    }
+</style>
+
+<script>
+    // Configuration for this specific location/account
+    const FORM_CONFIG = {
+        // Location-specific data (replace these with your actual values)
+        locationId: '{{location.id}}',
+        locationName: '{{location.name}}',
+        rootDomain: '{{custom_values.root_domain}}',
+        privateValue: '{{custom_values.private}}',
+        
+        // Form configuration
+        screenerType: 'GLP1', // Change this to: GLP1, NAD, Semorelin, etc.
+        databaseId: '26e82abf7eae80f5ae8eeb0c7ecc76f0', // Your Notion database ID
+        
+        // GitHub Pages URL (this will be automatically updated)
+        formUrl: 'https://locumtele.github.io/EMR/forms/notion-based/dynamic-form.html'
+    };
+    
+    // Load the dynamic form
+    function loadDynamicForm() {
+        const container = document.getElementById('dynamic-form-container');
+        const loading = document.getElementById('loading');
+        
+        // Create iframe to load the form
+        const iframe = document.createElement('iframe');
+        iframe.src = `${FORM_CONFIG.formUrl}?screener=${FORM_CONFIG.screenerType}&db=${FORM_CONFIG.databaseId}`;
+        iframe.style.width = '100%';
+        iframe.style.height = '800px';
+        iframe.style.border = 'none';
+        iframe.style.borderRadius = '8px';
+        iframe.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+        
+        // Hide loading when iframe loads
+        iframe.onload = function() {
+            loading.style.display = 'none';
+            container.classList.add('form-loaded');
+        };
+        
+        // Add iframe to container
+        container.appendChild(iframe);
+    }
+    
+    // Load form when page is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadDynamicForm);
+    } else {
+        loadDynamicForm();
+    }
+    
+    // Optional: Listen for form completion events
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'FORM_COMPLETED') {
+            console.log('Form completed:', event.data);
+            // You can add custom logic here for form completion
+            // For example, redirect to a thank you page
+        }
+    });
+</script>
+
+<!-- 
+USAGE INSTRUCTIONS:
+==================
+1. Copy this entire HTML snippet
+2. Replace the {{}} placeholders with actual values:
+   - {{location.id}} → Your location ID (e.g., "12345")
+   - {{location.name}} → Your location name (e.g., "Main Clinic")
+   - {{custom_values.root_domain}} → Your domain (e.g., "https://yourclinic.com")
+   - {{custom_values.private}} → Any private value you need
+3. Change screenerType to the desired screener (GLP1, NAD, Semorelin, etc.)
+4. Paste the updated snippet into your GoHighLevel page or website
+
+EXAMPLE FOR DIFFERENT LOCATIONS:
+===============================
+Location A (GLP1): screenerType: 'GLP1'
+Location B (NAD): screenerType: 'NAD'  
+Location C (Semorelin): screenerType: 'Semorelin'
+
+The form will automatically load with the correct questions and redirects for each screener type.
+-->
