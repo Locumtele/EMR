@@ -5,7 +5,7 @@
 ### **Notion Configuration**
 | Field | Current Value | Your Value | Notes |
 |-------|---------------|------------|-------|
-| **Notion Secret** | `YOUR_NOTION_SECRET_HERE` | ⚠️ **REQUIRED** | Your Notion integration secret |
+| **Notion Secret** | `YOUR_NOTION_SECRET_HERE` | ✅ **SET AS GITHUB SECRET** | Your Notion integration secret (set in GitHub repository secrets) |
 | **Screener Database ID** | `26e82abf7eae80f5ae8eeb0c7ecc76f0` | ✅ **UPDATED** | Your Notion database ID |
 | **Database URL** | `https://www.notion.so/vertimd/26e82abf7eae80f5ae8eeb0c7ecc76f0` | ✅ **UPDATED** | Your Notion database URL |
 
@@ -36,7 +36,28 @@
 | `{{custom_values.root_domain}}` | Your domain | `https://yourclinic.com` |
 | `{{custom_values.private}}` | Private value | `internal_value` |
 
-## 🚀 **Deployment URLs**
+## 🚀 **Deployment**
+
+### **GitHub Pages Setup**
+1. Go to your repository Settings → Pages
+2. Enable GitHub Pages
+3. Your forms will be available at: `https://locumtele.github.io/EMR/forms/notion-based/dynamic-form.html`
+
+### **Automatic Deployment**
+- The GitHub Actions workflow will automatically deploy when you push to main
+- Your Notion secret will be securely injected during deployment
+- No manual configuration needed after initial setup
+
+### **Local Testing**
+```bash
+# Test locally with your Notion secret
+./deploy-local.sh YOUR_ACTUAL_NOTION_SECRET
+
+# Then open the form in your browser
+open forms/notion-based/dynamic-form.html
+```
+
+## 🌐 **Deployment URLs**
 
 ### **Form URLs (After Deployment)**
 | Screener | URL Format | Example |
