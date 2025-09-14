@@ -259,9 +259,13 @@ class GenericFormActions {
             group.style.display = 'none';
         });
         
-        // Hide submit button
+        // Hide submit button and make sure it stays hidden
         const submitBtn = document.getElementById('submit-btn');
-        if (submitBtn) submitBtn.style.display = 'none';
+        if (submitBtn) {
+            submitBtn.style.display = 'none';
+            submitBtn.style.visibility = 'hidden';
+            submitBtn.disabled = true;
+        }
 
         // Show result
         this.resultDisplay.style.display = 'block';
@@ -526,7 +530,11 @@ class GenericFormActions {
         
         // Show submit button
         const submitBtn = document.getElementById('submit-btn');
-        if (submitBtn) submitBtn.style.display = '';
+        if (submitBtn) {
+            submitBtn.style.display = 'block';
+            submitBtn.style.visibility = 'visible';
+            submitBtn.disabled = false;
+        }
         
         // Hide result display
         this.resultDisplay.style.display = 'none';
