@@ -69,18 +69,28 @@
         }
 
         .radio-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
             margin-bottom: 10px;
         }
 
         .radio-option {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
             cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
             min-width: fit-content;
+        }
+
+        .radio-option:hover {
+            background: #f0f0f0;
+            border-color: #999;
         }
 
         .radio-option input[type="radio"] {
@@ -180,39 +190,6 @@
             font-size: 16px;
         }
 
-        .alcohol-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-        }
-
-        .alcohol-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: white;
-        }
-
-        .alcohol-option:hover {
-            background: #f0f0f0;
-            border-color: #999;
-        }
-
-        .alcohol-option input[type="radio"] {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-        }
-
-        .alcohol-option label {
-            font-size: 15px;
-            cursor: pointer;
-        }
 
         .follow-up {
             margin-top: 15px;
@@ -236,17 +213,6 @@
             display: none;
         }
 
-        .result-proceed {
-            background: #f0f0f0;
-            color: black;
-            border: 1px solid #ddd;
-        }
-
-        .result-flag {
-            background: #f0f0f0;
-            color: black;
-            border: 1px solid #ddd;
-        }
 
         .result-disqualify {
             background: #f0f0f0;
@@ -254,18 +220,11 @@
             border: 1px solid #ddd;
         }
 
-        .question-group {
-            display: block;
-        }
-
-        #submit-btn {
-            display: block !important;
-        }
 
         .nav-button {
-            background: #000;
-            color: white;
-            border: none;
+            background: transparent;
+            color: black;
+            border: 2px solid black;
             padding: 15px 24px;
             border-radius: 6px;
             cursor: pointer;
@@ -275,11 +234,14 @@
         }
 
         .nav-button:hover {
-            background: #333;
+            background: black;
+            color: white;
         }
 
         .nav-button:disabled {
-            background: #ccc;
+            background: transparent;
+            color: #ccc;
+            border-color: #ccc;
             cursor: not-allowed;
         }
 
@@ -339,10 +301,6 @@
                 gap: 10px;
             }
             
-            .alcohol-options { 
-                grid-template-columns: 1fr !important;
-                gap: 10px;
-            }
             
             .sub-questions.two-col,
             .sub-questions.three-col {
@@ -350,14 +308,13 @@
                 gap: 15px;
             }
             
-            .radio-group {
-                flex-direction: column;
-                gap: 12px;
+            .radio-group { 
+                grid-template-columns: 1fr !important;
+                gap: 10px;
             }
             
             .radio-option,
-            .checkbox-option,
-            .alcohol-option {
+            .checkbox-option {
                 padding: 12px;
             }
             
@@ -428,8 +385,7 @@
             }
             
             .checkbox-option label,
-            .radio-option label,
-            .alcohol-option label {
+            .radio-option label {
                 font-size: 14px;
             }
             
@@ -448,7 +404,8 @@
                 grid-template-columns: repeat(2, 1fr) !important;
             }
             
-            .alcohol-options {
+            
+            .radio-group {
                 grid-template-columns: repeat(2, 1fr) !important;
             }
         }
@@ -721,24 +678,24 @@
                 
                 <div class="question">
                     <label class="question-label">How much alcohol do you typically consume?</label>
-                    <div class="alcohol-options">
-                        <div class="alcohol-option">
+                    <div class="radio-group">
+                        <div class="radio-option">
                             <input type="radio" id="alcohol_minimal" name="alcohol_amount" value="0-2_weekly" required>
                             <label for="alcohol_minimal">0-2 drinks/week</label>
                         </div>
-                        <div class="alcohol-option">
+                        <div class="radio-option">
                             <input type="radio" id="alcohol_moderate" name="alcohol_amount" value="3-5_weekly" required>
                             <label for="alcohol_moderate">3-5 drinks/week</label>
                         </div>
-                        <div class="alcohol-option">
+                        <div class="radio-option">
                             <input type="radio" id="alcohol_daily_light" name="alcohol_amount" value="1-2_daily" required>
                             <label for="alcohol_daily_light">1-2 drinks/day</label>
                         </div>
-                        <div class="alcohol-option">
+                        <div class="radio-option">
                             <input type="radio" id="alcohol_heavy" name="alcohol_amount" value="2+_daily" required>
                             <label for="alcohol_heavy">2+ drinks/day</label>
                         </div>
-                        <div class="alcohol-option">
+                        <div class="radio-option">
                             <input type="radio" id="alcohol_none" name="alcohol_amount" value="none" required>
                             <label for="alcohol_none">None</label>
                         </div>

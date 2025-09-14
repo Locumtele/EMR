@@ -1,0 +1,164 @@
+name: Update Form Configurations
+
+on:
+  repository_dispatch:
+    types: [notion-webhook]
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  update-configs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        npm init -y
+        npm install @notionhq/client
+
+    - name: Generate form configurations
+      env:
+        NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+        NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+      run: |
+        node << 'EOF'
+        const { Client } = require('@notionhq/client');
+        const fs = require('fs');
+        const path = require('path');
+
+        const notion = new Client({ auth: process.env.NOTION_API_KEY });
+
+        async function generateConfigs() {
+          try {
+            // Query the Notion database
+            const response = await notion.databases.query({
+              database_id: process.env.NOTION_DATABASE_ID,
+            });
+
+            console.log(`Processing ${response.results.length} total questions`);
+
+            const screenerGroups = {};
+
+            response.results.forEach(item => {
+              const props = item.properties;
+
+              // Extract screener name
+              const screenerName = props.Screener?.multi_select?.[0]?.name ||
+                                 props.Screener?.select?.name;
+
+              if (!screenerName) {
+                console.log('No screener name found for item:', props.Question_Text?.title?.[0]?.plain_text);
+                return;
+              }
+
+              if (!screenerGroups[screenerName]) {
+                screenerGroups[screenerName] = [];
+              }
+
+              // Parse comma-separated values for multi-select fields
+              const parseCommaSeparated = (str) => {
+                if (!str || str === '') return [];
+                return str.split(',').map(s => s.trim()).filter(s => s !== '');
+              };
+
+              const getTextValue = (prop) => {
+                if (prop?.title?.[0]?.plain_text) return prop.title[0].plain_text;
+                if (prop?.rich_text?.[0]?.plain_text) return prop.rich_text[0].plain_text;
+                return '';
+              };
+
+              const getSelectValue = (prop) => {
+                return prop?.select?.name || '';
+              };
+
+              const getMultiSelectValues = (prop) => {
+                return prop?.multi_select?.map(item => item.name) || [];
+              };
+
+              screenerGroups[screenerName].push({
+                id: props.Question_Number?.number || 0,
+                section: getSelectValue(props.Section),
+                text: getTextValue(props.Question_Text),
+                type: getSelectValue(props.Input_Type) || 'text',
+                safe: parseCommaSeparated(getTextValue(props.Safe) || getMultiSelectValues(props.Safe).join(',')),
+                flag: parseCommaSeparated(getTextValue(props.Flag) || getMultiSelectValues(props.Flag).join(',')),
+                disqualify: parseCommaSeparated(getTextValue(props.Disqualify) || getMultiSelectValues(props.Disqualify).join(',')),
+                disqualifyMessage: getTextValue(props['Disqualify Message']),
+                showCondition: getSelectValue(props['Show Condition']) || 'always',
+                category: getSelectValue(props.Category) || getMultiSelectValues(props.Category)[0] || ''
+              });
+            });
+
+            console.log('Screener groups created:', Object.keys(screenerGroups));
+
+            // Ensure configs directory exists
+            const configsDir = path.join(process.cwd(), 'configs');
+            if (!fs.existsSync(configsDir)) {
+              fs.mkdirSync(configsDir, { recursive: true });
+            }
+
+            // Create JSON config for each screener
+            const generatedFiles = [];
+            Object.entries(screenerGroups).forEach(([screenerName, questions]) => {
+              const sortedQuestions = questions.sort((a, b) => a.id - b.id);
+
+              const config = {
+                screener: screenerName,
+                category: sortedQuestions[0]?.category || '',
+                lastUpdated: new Date().toISOString(),
+                totalQuestions: sortedQuestions.length,
+                questions: sortedQuestions
+              };
+
+              const filename = `${screenerName.toLowerCase()}.json`;
+              const filepath = path.join(configsDir, filename);
+
+              fs.writeFileSync(filepath, JSON.stringify(config, null, 2));
+              generatedFiles.push(filename);
+
+              console.log(`Generated ${filename} with ${sortedQuestions.length} questions`);
+            });
+
+            console.log(`Successfully generated ${generatedFiles.length} config files:`, generatedFiles);
+
+            // Write summary file
+            const summary = {
+              lastUpdate: new Date().toISOString(),
+              totalScreeners: generatedFiles.length,
+              screeners: generatedFiles.map(f => f.replace('.json', '').toUpperCase())
+            };
+
+            fs.writeFileSync(path.join(configsDir, '_summary.json'), JSON.stringify(summary, null, 2));
+
+          } catch (error) {
+            console.error('Error generating configs:', error);
+            process.exit(1);
+          }
+        }
+
+        generateConfigs();
+        EOF
+
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add configs/
+
+        # Only commit if there are changes
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Auto-update form configurations from Notion
+
+          🤖 Generated with GitHub Actions
+          📅 $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          git push
+        fi
