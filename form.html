@@ -112,6 +112,18 @@
             Object.entries(sections).forEach(([section, qs]) => {
                 html += `<div class="question-group"><div class="question-title">${section}</div>`;
                 qs.forEach(q => {
+                    // Check if this question should be conditionally shown
+                    const isConditional = q.showCondition && q.showCondition !== 'always';
+                    const conditionClass = isConditional ? `conditional-question-${q.id}` : '';
+                    const conditionData = isConditional ? `data-show-if="${q.showCondition}"` : '';
+                    const isInitiallyHidden = (isConditional && q.showCondition.includes('if_gender_female')) ? 'style="display: none;"' : '';
+                    
+                    // Start conditional wrapper if needed
+                    if (isConditional) {
+                        html += `<div class="conditional-question ${conditionClass}" ${conditionData} ${isInitiallyHidden}>`;
+                    }
+                    
+                    // Build the question
                     html += `<div class="question"><label class="question-label">${q.text}</label>`;
                     
                     // Special handling for height/weight questions
@@ -123,13 +135,7 @@
                     } else if (q.text.toLowerCase().includes('weight') && q.text.toLowerCase().includes('pounds')) {
                         html += '<div><label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Weight (pounds)</label><input class="text-input" type="number" name="weight_pounds" placeholder="180" min="50" max="800" onchange="calculateBMI()"></div>';
                         html += '<div id="bmi-result" style="margin-top: 10px; padding: 10px; border-radius: 6px; display: none;"></div>';
-                    } else if (q.type === 'radio') {
-                        html += '<div class="checkbox-group">';
-                        [...new Set([...q.safe, ...q.flag, ...q.disqualify])].forEach(opt => {
-                            html += `<div class="checkbox-option"><input type="checkbox" name="${q.id}" value="${opt}"><label>${opt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label></div>`;
-                        });
-                        html += '</div>';
-                    } else if (q.type === 'checkbox') {
+                    } else if (q.type === 'radio' || q.type === 'checkbox') {
                         html += '<div class="checkbox-group">';
                         [...new Set([...q.safe, ...q.flag, ...q.disqualify])].forEach(opt => {
                             html += `<div class="checkbox-option"><input type="checkbox" name="${q.id}" value="${opt}"><label>${opt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label></div>`;
@@ -139,21 +145,11 @@
                         const placeholder = q.placeholder || getDefaultPlaceholder(q.type, q.text);
                         html += `<input class="text-input" type="${q.type}" name="${q.id}" placeholder="${placeholder}">`;
                     }
-                    html += '</div>';
+                    html += '</div>'; // Close question div
                     
-                    // Add conditional logic based on showCondition from Notion
-                    if (q.showCondition && q.showCondition !== 'always') {
-                        const conditionClass = `conditional-question-${q.id}`;
-                        const conditionData = `data-show-if="${q.showCondition}"`;
-                        const isInitiallyHidden = q.showCondition.includes('if_gender_female') ? 'style="display: none;"' : '';
-                        
-                        html += `<div class="conditional-question ${conditionClass}" ${conditionData} ${isInitiallyHidden}>
-                            <div class="question"><label class="question-label">${q.text}</label>
-                                <div class="checkbox-group">`;
-                        [...new Set([...q.safe, ...q.flag, ...q.disqualify])].forEach(opt => {
-                            html += `<div class="checkbox-option"><input type="checkbox" name="${q.id}" value="${opt}"><label>${opt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label></div>`;
-                        });
-                        html += `</div></div></div>`;
+                    // Close conditional wrapper if needed
+                    if (isConditional) {
+                        html += '</div>';
                     }
                 });
                 
