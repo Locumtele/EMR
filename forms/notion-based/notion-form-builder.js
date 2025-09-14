@@ -32,16 +32,10 @@ class NotionFormBuilder {
 
             const data = await response.json();
             
-            // Handle n8n response - it might be wrapped in an array
-            let responseData = data;
-            if (Array.isArray(data) && data.length > 0) {
-                responseData = data[0];
-            }
-            
             // Check if we got valid data from n8n
-            if (responseData.success && responseData.questions) {
-                console.log(`Successfully loaded ${responseData.questions.length} questions from Notion via n8n`);
-                return responseData.questions;
+            if (data.success && data.questions) {
+                console.log(`Successfully loaded ${data.questions.length} questions from Notion via n8n`);
+                return data.questions;
             } else {
                 throw new Error('Invalid response from n8n webhook');
             }
