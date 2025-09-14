@@ -64,6 +64,9 @@
                 // Show submit button
                 document.getElementById('submit-btn').style.display = 'block';
                 
+                // Add class to body to trigger transparent background
+                document.body.classList.add('questions-loaded');
+                
                 // Initialize form actions
                 const formActions = new GenericFormActions('dynamicScreeningForm', screenerType, questions);
                 formActions.init();

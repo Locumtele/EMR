@@ -29,8 +29,8 @@ body {
 
 /* Iframe-specific styles - Force override any parent styles */
 html, body {
-    background: transparent !important;
-    background-color: transparent !important;
+    background: white !important; /* White during loading */
+    background-color: white !important;
     padding: 0 !important;
     margin: 0 !important;
     height: auto !important;
@@ -43,17 +43,19 @@ html, body {
     box-sizing: border-box !important;
 }
 
-body * {
-    background-color: transparent !important;
-}
-
 /* Ensure form elements have proper backgrounds */
 .question-group {
-    background: white !important;
+    background: #f8f8f8 !important; /* Off-white for question containers */
 }
 
 .radio-option, .checkbox-option {
     background: white !important;
+}
+
+/* Transparent background after questions load */
+body.questions-loaded {
+    background: transparent !important;
+    background-color: transparent !important;
 }
 
 .form-content {
@@ -306,7 +308,15 @@ body * {
     body {
         padding: 0;
         margin: 0;
-        background: transparent;
+        background: white !important;
+        background-color: white !important;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+    
+    body.questions-loaded {
+        background: transparent !important;
+        background-color: transparent !important;
     }
     
     .form-container {
@@ -436,6 +446,16 @@ body * {
     
     .submit-container {
         padding: 0 12px;
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .nav-button {
+        width: 100%;
+        padding: 15px;
+        font-size: 16px;
+        margin-bottom: 20px;
     }
 }
 
