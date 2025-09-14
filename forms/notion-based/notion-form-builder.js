@@ -32,12 +32,18 @@ class NotionFormBuilder {
 
             const data = await response.json();
             
-            // Check if we got valid data from n8n
-            if (data.success && data.questions) {
+            // Handle different response formats
+            if (Array.isArray(data) && data.length > 0 && data[0].content) {
+                // New format: array with content field containing JSON string
+                console.log(`Successfully loaded questions from new format`);
+                const content = JSON.parse(data[0].content);
+                return this.transformNewFormat(content.questions);
+            } else if (data.success && data.questions) {
+                // Original n8n format
                 console.log(`Successfully loaded ${data.questions.length} questions from Notion via n8n`);
                 return data.questions;
             } else {
-                throw new Error('Invalid response from n8n webhook');
+                throw new Error('Invalid response from webhook');
             }
         } catch (error) {
             console.error('Error fetching questions from n8n webhook:', error);
@@ -148,6 +154,25 @@ class NotionFormBuilder {
                 category: this.getPropertyValue(properties, 'property_category', true) // array
             };
         });
+    }
+
+    // Transform new reliable format to our internal format
+    transformNewFormat(questions) {
+        return questions.map(question => ({
+            id: question.id.toString(),
+            name: this.sanitizeName(question.text),
+            questionText: question.text,
+            inputType: question.type,
+            section: question.section,
+            questionNumber: question.id,
+            showCondition: question.showCondition,
+            safe: Array.isArray(question.safe) ? question.safe.join(',') : question.safe,
+            disqualify: Array.isArray(question.disqualify) ? question.disqualify.join(',') : question.disqualify,
+            flag: Array.isArray(question.flag) ? question.flag.join(',') : question.flag,
+            disqualifyMessage: question.disqualifyMessage,
+            screener: [question.category], // Use category as screener
+            category: [question.category]
+        }));
     }
 
 
