@@ -104,43 +104,7 @@ body.questions-loaded {
     margin-bottom: 0;
 }
 
-/* Radio buttons now use checkbox styling */
-.radio-group {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 12px;
-    margin-bottom: 15px;
-}
-
-.radio-option {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 15px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: white;
-}
-
-.radio-option:hover {
-    background: #f0f0f0;
-    border-color: #999;
-}
-
-.radio-option input[type="radio"] {
-    width: 20px;
-    height: 20px;
-    margin-top: 2px;
-    flex-shrink: 0;
-}
-
-.radio-option label {
-    cursor: pointer;
-    font-size: 15px;
-    line-height: 1.4;
-}
+/* All options now use checkbox styling */
 
 .checkbox-group {
     display: grid;
@@ -373,12 +337,6 @@ body.questions-loaded {
         gap: 15px;
     }
     
-    .radio-group {
-        grid-template-columns: 1fr !important;
-        gap: 10px;
-    }
-    
-    .radio-option,
     .checkbox-option {
         padding: 12px;
     }
@@ -408,7 +366,6 @@ body.questions-loaded {
     }
     
     /* Improve touch targets */
-    .radio-option input[type="radio"],
     .checkbox-option input[type="checkbox"] {
         width: 22px;
         height: 22px;
@@ -449,8 +406,7 @@ body.questions-loaded {
         font-size: 14px;
     }
     
-    .checkbox-option label,
-    .radio-option label {
+    .checkbox-option label {
         font-size: 14px;
     }
     
@@ -475,8 +431,7 @@ body.questions-loaded {
         grid-template-columns: repeat(2, 1fr) !important;
     }
     
-    .checkbox-group,
-    .radio-group {
+    .checkbox-group {
         grid-template-columns: repeat(2, 1fr) !important;
     }
 }

@@ -553,9 +553,9 @@
                     } else if (q.text.toLowerCase().includes('weight') && q.text.toLowerCase().includes('pounds')) {
                         html += '<div><label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Weight (pounds)</label><input class="text-input" type="number" name="weight_pounds" placeholder="180" min="50" max="800"></div>';
                     } else if (q.type === 'radio') {
-                        html += '<div class="radio-group">';
+                        html += '<div class="checkbox-group">';
                         [...new Set([...q.safe, ...q.flag, ...q.disqualify])].forEach(opt => {
-                            html += `<div class="radio-option"><input type="radio" name="${q.id}" value="${opt}"><label>${opt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label></div>`;
+                            html += `<div class="checkbox-option"><input type="checkbox" name="${q.id}" value="${opt}"><label>${opt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label></div>`;
                         });
                         html += '</div>';
                     } else if (q.type === 'checkbox') {
