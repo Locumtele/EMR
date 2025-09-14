@@ -476,23 +476,29 @@ class GenericFormActions {
         return response.json();
     }
 
-    // Trigger redirect
+    // Trigger redirect via GHL footer code
     triggerRedirect(redirectUrl) {
+        // Get category from redirect path (e.g., 'weightloss-fee' -> 'weightloss')
+        const category = this.getRedirectPath().replace('-fee', '').replace('hairandskin', 'hairSkin');
+        
+        // Trigger custom event for GHL footer code to handle
         const redirectEvent = new CustomEvent('ghlRedirect', {
             detail: { 
-                category: this.screenerType.toLowerCase(),
-                formType: this.screenerType.toLowerCase()
+                category: category,
+                formType: category,
+                redirectPath: this.getRedirectPath(),
+                redirectUrl: redirectUrl
             }
         });
-        window.dispatchEvent(redirectEvent);
         
-        setTimeout(() => {
-            if (typeof window.redirectToURL === 'function') {
-                window.redirectToURL(redirectUrl);
-            } else {
-                window.location.href = redirectUrl;
-            }
-        }, 500);
+        console.log('Triggering GHL redirect event for category:', category);
+        
+        // Send event to parent window (if in iframe) or current window
+        if (window.parent !== window) {
+            window.parent.dispatchEvent(redirectEvent);
+        } else {
+            window.dispatchEvent(redirectEvent);
+        }
     }
 
     // Setup start over button
