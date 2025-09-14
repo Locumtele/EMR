@@ -476,8 +476,8 @@ class NotionFormBuilder {
             
             let html = '';
             Object.keys(sections).forEach(sectionName => {
+                html += `<div class="section-header">${sectionName}</div>`;
                 html += `<div class="question-group" id="${this.sanitizeId(sectionName)}-section">`;
-                html += `<div class="question-title">${sectionName}</div>`;
                 
                 sections[sectionName].forEach(question => {
                     html += this.generateQuestionHTML(question);

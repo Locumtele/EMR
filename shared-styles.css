@@ -43,6 +43,22 @@ html, body {
     box-sizing: border-box !important;
 }
 
+/* Section headers */
+.section-header {
+    font-size: 20px;
+    font-weight: 600;
+    color: black;
+    margin: 30px 0 20px 0;
+    padding: 0;
+    text-align: left;
+    background: transparent;
+    border: none;
+}
+
+.section-header:first-child {
+    margin-top: 0;
+}
+
 /* Ensure form elements have proper backgrounds */
 .question-group {
     background: white !important; /* White containers with shadow */
@@ -84,16 +100,16 @@ body.questions-loaded {
 }
 
 .question {
-    margin-bottom: 25px;
-    padding: 20px;
+    margin-bottom: 20px;
+    padding: 0;
     background: transparent;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
+    border-radius: 0;
+    border: none;
 }
 
 .question-label {
     display: block;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     font-weight: 500;
     color: black;
     font-size: 16px;
@@ -225,6 +241,7 @@ body.questions-loaded {
     border-radius: 6px;
     font-family: inherit;
     font-size: 16px;
+    background: white;
 }
 
 
