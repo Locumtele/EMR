@@ -150,6 +150,7 @@ class NotionFormBuilder {
         });
     }
 
+
     // Helper to get property values from Notion
     getPropertyValue(properties, propertyName, isArray = false) {
         const property = properties[propertyName];
