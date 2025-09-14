@@ -73,9 +73,19 @@ body {
 .radio-option {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
     min-width: fit-content;
+}
+
+.radio-option:hover {
+    background: #f0f0f0;
+    border-color: #999;
 }
 
 .radio-option input[type="radio"] {
