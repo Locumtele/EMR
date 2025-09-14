@@ -1,0 +1,39 @@
+{
+  "screener": "GLP1",
+  "lastUpdated": "2024-01-01T00:00:00Z",
+  "questions": [
+    {
+      "id": 1,
+      "section": "Patient Profile",
+      "text": "Full Name",
+      "type": "text",
+      "safe": ["any_text"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always"
+    },
+    {
+      "id": 2,
+      "section": "Patient Profile",
+      "text": "Email Address",
+      "type": "email",
+      "safe": ["any_email"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always"
+    },
+    {
+      "id": 3,
+      "section": "Patient Profile",
+      "text": "Gender",
+      "type": "radio",
+      "safe": ["male", "female"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always"
+    }
+  ]
+}
