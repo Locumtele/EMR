@@ -114,11 +114,12 @@
                     // Special handling for height/weight questions
                     if (q.text.toLowerCase().includes('height') && q.text.toLowerCase().includes('feet')) {
                         html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">';
-                        html += '<div><label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Height (feet)</label><input class="text-input" type="number" name="height_feet" placeholder="5" min="3" max="8"></div>';
-                        html += '<div><label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Height (inches)</label><input class="text-input" type="number" name="height_inches" placeholder="6" min="0" max="11"></div>';
+                        html += '<div><label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Height (feet)</label><input class="text-input" type="number" name="height_feet" placeholder="5" min="3" max="8" onchange="calculateBMI()"></div>';
+                        html += '<div><label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Height (inches)</label><input class="text-input" type="number" name="height_inches" placeholder="6" min="0" max="11" onchange="calculateBMI()"></div>';
                         html += '</div>';
                     } else if (q.text.toLowerCase().includes('weight') && q.text.toLowerCase().includes('pounds')) {
-                        html += '<div><label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Weight (pounds)</label><input class="text-input" type="number" name="weight_pounds" placeholder="180" min="50" max="800"></div>';
+                        html += '<div><label style="font-size: 14px; color: #666; margin-bottom: 5px; display: block;">Weight (pounds)</label><input class="text-input" type="number" name="weight_pounds" placeholder="180" min="50" max="800" onchange="calculateBMI()"></div>';
+                        html += '<div id="bmi-result" style="margin-top: 10px; padding: 10px; border-radius: 6px; display: none;"></div>';
                     } else if (q.type === 'radio') {
                         html += '<div class="checkbox-group">';
                         [...new Set([...q.safe, ...q.flag, ...q.disqualify])].forEach(opt => {
@@ -216,8 +217,102 @@
                     errors.push('You must be 18 years or older to use this service');
                 }
             }
-            
+
+            // Check BMI disqualification
+            const bmiResult = document.getElementById('bmi-result');
+            if (bmiResult && bmiResult.getAttribute('data-disqualified') === 'true') {
+                errors.push('BMI requirement not met. This program requires a BMI of 25 or higher.');
+            }
+
+            // Check for disqualifying conditions
+            const disqualificationResult = checkDisqualifyingConditions(data);
+            if (disqualificationResult.disqualified) {
+                errors.push(disqualificationResult.message);
+            }
+
             return errors;
+        }
+
+        function checkDisqualifyingConditions(data) {
+            // Check pregnancy/breastfeeding (only for females)
+            if (data['5'] === 'female' && (data['6'] === 'yes' || data['6'] === 'Yes')) {
+                return {
+                    disqualified: true,
+                    message: 'For the safety of you and your baby, GLP-1 medications are not recommended during pregnancy, while trying to conceive, or while breastfeeding.'
+                };
+            }
+
+            // Check for disqualifying medical conditions (question 10)
+            const disqualifyingConditions = [
+                'diabetes_type1', 'pancreatitis', 'medullary_thyroid', 
+                'men2', 'liver_disease', 'leber_neuropathy'
+            ];
+            
+            for (let condition of disqualifyingConditions) {
+                if (data['10'] && data['10'].includes(condition)) {
+                    return {
+                        disqualified: true,
+                        message: 'Based on your medical history, GLP-1 medications may not be safe for you. We recommend discussing weight management options with your healthcare provider.'
+                    };
+                }
+            }
+
+            // Check for disqualifying medications (question 11)
+            const disqualifyingMedications = [
+                'abiraterone', 'somatrogon', 'chloroquine', 
+                'insulin', 'other_glp1s'
+            ];
+            
+            for (let medication of disqualifyingMedications) {
+                if (data['11'] && data['11'].includes(medication)) {
+                    return {
+                        disqualified: true,
+                        message: 'Your current medications may interact with GLP-1 therapy. Please work with your prescribing doctor to explore safe weight management options that won\'t interfere with your current treatment.'
+                    };
+                }
+            }
+
+            // Check HbA1C >8% (question 12)
+            if (data['12'] === 'yes' || data['12'] === 'Yes') {
+                return {
+                    disqualified: true,
+                    message: 'Your current HbA1C level requires specialized diabetes care. We recommend working with an endocrinologist or your primary care doctor for the best treatment approach.'
+                };
+            }
+
+            // Check family history of thyroid conditions (question 13)
+            if (data['13'] === 'yes' || data['13'] === 'Yes') {
+                return {
+                    disqualified: true,
+                    message: 'Due to your family history of thyroid conditions, GLP-1 medications carry additional risks for you. Please consult with an endocrinologist about safer alternatives.'
+                };
+            }
+
+            // Check chemotherapy (question 14)
+            if (data['14'] === 'yes' || data['14'] === 'Yes') {
+                return {
+                    disqualified: true,
+                    message: 'While receiving cancer treatment, it\'s important to focus on your current therapy. Please discuss weight management goals with your oncology team when appropriate.'
+                };
+            }
+
+            // Check heavy alcohol consumption (question 16)
+            if (data['16'] === '2+_daily') {
+                return {
+                    disqualified: true,
+                    message: 'Regular heavy alcohol consumption can interact dangerously with GLP-1 medications. We recommend discussing safer weight management options with your healthcare provider.'
+                };
+            }
+
+            // Check depression with suicidal ideation (question 20)
+            if (data['20'] === 'yes' || data['20'] === 'Yes') {
+                return {
+                    disqualified: true,
+                    message: 'We take mental health seriously. Please consult with a mental health professional before considering GLP-1 therapy, as these medications can affect mood and mental well-being.'
+                };
+            }
+
+            return { disqualified: false, message: '' };
         }
         
         function getFieldName(fieldId) {
@@ -250,12 +345,86 @@
             return age;
         }
 
+        function calculateBMI() {
+            const heightFeet = document.querySelector('input[name="height_feet"]')?.value;
+            const heightInches = document.querySelector('input[name="height_inches"]')?.value;
+            const weightPounds = document.querySelector('input[name="weight_pounds"]')?.value;
+            const resultDiv = document.getElementById('bmi-result');
+
+            if (!heightFeet || !heightInches || !weightPounds || !resultDiv) {
+                return;
+            }
+
+            // Convert height to total inches
+            const totalInches = (parseInt(heightFeet) * 12) + parseInt(heightInches);
+
+            // Calculate BMI: (weight in pounds / (height in inches)²) × 703
+            const bmi = (parseFloat(weightPounds) / (totalInches * totalInches)) * 703;
+
+            if (isNaN(bmi) || bmi <= 0) {
+                resultDiv.style.display = 'none';
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+
+            if (bmi < 25) {
+                resultDiv.innerHTML = `
+                    <div style="background: #fee; border: 1px solid #fcc; color: #c33;">
+                        <strong>BMI: ${bmi.toFixed(1)}</strong><br>
+                        Unfortunately, this program requires a BMI of 25 or higher. You may not be eligible for this treatment.
+                    </div>
+                `;
+                resultDiv.setAttribute('data-disqualified', 'true');
+            } else {
+                resultDiv.innerHTML = `
+                    <div style="background: #efe; border: 1px solid #cfc; color: #363;">
+                        <strong>BMI: ${bmi.toFixed(1)}</strong><br>
+                        Great! You meet the BMI requirement for this program.
+                    </div>
+                `;
+                resultDiv.setAttribute('data-disqualified', 'false');
+            }
+        }
+
+        function showDisqualificationScreen(message) {
+            document.getElementById('form').style.display = 'none';
+            document.getElementById('loading').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #e74c3c;">
+                    <div style="background: #fee; border: 2px solid #fcc; border-radius: 12px; padding: 30px; margin: 20px 0;">
+                        <h2 style="color: #c33; margin-bottom: 20px;">Assessment Complete</h2>
+                        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">${message}</p>
+                        <p style="font-size: 14px; color: #666; margin-bottom: 25px;">
+                            We recommend discussing your health goals with your primary care physician or a specialist who can provide personalized guidance.
+                        </p>
+                        <button onclick="location.reload()" style="background: #000; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            Start Over
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('loading').style.display = 'block';
+        }
+
         document.getElementById('form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // Validate form
             const errors = validateForm();
             if (errors.length > 0) {
+                // Check if it's a disqualification error
+                const disqualificationError = errors.find(error => 
+                    error.includes('GLP-1 medications') || 
+                    error.includes('BMI requirement') ||
+                    error.includes('safety') ||
+                    error.includes('not recommended')
+                );
+                
+                if (disqualificationError) {
+                    showDisqualificationScreen(disqualificationError);
+                    return;
+                }
+                
                 alert('Please fix the following errors:\n\n' + errors.join('\n'));
                 return;
             }
