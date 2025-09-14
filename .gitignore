@@ -1,1 +1,24 @@
-/IMPLEMENTATION-CHECKLIST.md
+# Archive folder - contains historical static files
+archive/
+
+# OS files
+.DS_Store
+**/.DS_Store
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Package locks (keep package.json, ignore locks)
+package-lock.json
+
+# Environment and local config
+.env
+*.local
+
+# IDE files
+.claude/
+.vscode/
+
+# Logs
+*.log
