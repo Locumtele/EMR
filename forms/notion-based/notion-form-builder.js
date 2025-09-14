@@ -224,6 +224,8 @@ class NotionFormBuilder {
         // Special case for height questions - generate two separate inputs
         if (question.name.toLowerCase().includes('height') && question.inputType === 'number') {
             html += this.generateHeightInputs(question, questionId, inputName);
+        } else if (question.name.toLowerCase().includes('weight') && question.inputType === 'number') {
+            html += this.generateWeightInput(question, questionId, inputName);
         } else {
             switch (question.inputType) {
                 case 'text':
@@ -340,6 +342,19 @@ class NotionFormBuilder {
                 <div class="sub-question">
                     <label class="question-label" for="${questionId}_inches">Height (inches)</label>
                     <input class="text-input" id="${questionId}_inches" name="${inputName}_inches" type="number" min="0" max="11" placeholder="6" ${required}>
+                </div>
+            </div>
+        `;
+    }
+
+    // Generate weight input (pounds)
+    generateWeightInput(question, questionId, inputName) {
+        const required = question.disqualify || question.safe !== 'any_valid' ? 'required' : '';
+        return `
+            <div class="sub-questions three-col">
+                <div class="sub-question">
+                    <label class="question-label" for="${questionId}_pounds">Weight (pounds)</label>
+                    <input class="text-input" id="${questionId}_pounds" name="${inputName}_pounds" type="number" min="50" max="800" placeholder="180" ${required}>
                 </div>
             </div>
         `;

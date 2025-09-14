@@ -251,7 +251,7 @@ class GenericFormActions {
                 // Fallback for single height field
                 heightFeet = parseInt(value);
             }
-            if (key.toLowerCase().includes('weight') && !isNaN(parseInt(value))) {
+            if (key.toLowerCase().includes('weight') && (key.toLowerCase().includes('pounds') || !key.includes('_')) && !isNaN(parseInt(value))) {
                 weight = parseInt(value);
             }
         }
