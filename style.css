@@ -31,15 +31,25 @@ body.questions-loaded {
 }
 
 .title-box {
-    font-size: 24px;
-    font-weight: 600;
-    color: black;
     text-align: center;
     margin-bottom: 20px;
     padding: 20px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.title-box #dynamic-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: black;
+    margin-bottom: 8px;
+}
+
+.title-box .subtitle {
+    font-size: 14px;
+    color: #666;
+    font-weight: 400;
 }
 
 .form-content {
