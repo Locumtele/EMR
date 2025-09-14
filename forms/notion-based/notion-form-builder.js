@@ -6,44 +6,126 @@ class NotionFormBuilder {
         this.notionSecret = notionSecret;
         this.databaseId = databaseId;
         this.baseUrl = 'https://api.notion.com/v1';
+        this.n8nWebhookUrl = 'https://locumtele.app.n8n.cloud/webhook/notion-questions';
     }
 
-    // Fetch questions from Notion database
+    // Fetch questions from Notion database via n8n webhook
     async fetchQuestions(screenerType) {
         try {
-            const response = await fetch(`${this.baseUrl}/databases/${this.databaseId}/query`, {
+            console.log(`Fetching questions for screener: ${screenerType}`);
+            
+            const response = await fetch(this.n8nWebhookUrl, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${this.notionSecret}`,
-                    'Content-Type': 'application/json',
-                    'Notion-Version': '2022-06-28'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    filter: {
-                        property: 'property_screener',
-                        multi_select: {
-                            contains: screenerType
-                        }
-                    },
-                    sorts: [
-                        {
-                            property: 'property_question_number',
-                            direction: 'ascending'
-                        }
-                    ]
+                    screenerType: screenerType,
+                    databaseId: this.databaseId,
+                    notionSecret: this.notionSecret
                 })
             });
 
             if (!response.ok) {
-                throw new Error(`Notion API error: ${response.status}`);
+                throw new Error(`n8n webhook error: ${response.status}`);
             }
 
             const data = await response.json();
-            return this.transformNotionData(data.results);
+            
+            // Check if we got valid data from n8n
+            if (data.success && data.questions) {
+                console.log(`Successfully loaded ${data.questions.length} questions from Notion via n8n`);
+                return data.questions;
+            } else {
+                throw new Error('Invalid response from n8n webhook');
+            }
         } catch (error) {
-            console.error('Error fetching questions from Notion:', error);
-            throw error;
+            console.error('Error fetching questions from n8n webhook:', error);
+            console.log('Falling back to demo questions');
+            return this.getDemoQuestions(screenerType);
         }
+    }
+
+    // Demo questions as fallback when Notion API is not accessible
+    getDemoQuestions(screenerType) {
+        console.log('Using demo questions as fallback');
+        return [
+            {
+                id: 'demo-1',
+                name: 'full_name',
+                questionText: 'What is your full name?',
+                inputType: 'text',
+                section: 'Patient Profile',
+                questionNumber: 1,
+                showCondition: 'always',
+                safe: 'any_text',
+                disqualify: '',
+                flag: '',
+                disqualifyMessage: '',
+                screener: [screenerType],
+                category: ['Weightloss']
+            },
+            {
+                id: 'demo-2',
+                name: 'email_address',
+                questionText: 'What is your email address?',
+                inputType: 'email',
+                section: 'Patient Profile',
+                questionNumber: 2,
+                showCondition: 'always',
+                safe: 'any_email',
+                disqualify: '',
+                flag: '',
+                disqualifyMessage: '',
+                screener: [screenerType],
+                category: ['Weightloss']
+            },
+            {
+                id: 'demo-3',
+                name: 'phone_number',
+                questionText: 'What is your phone number?',
+                inputType: 'tel',
+                section: 'Patient Profile',
+                questionNumber: 3,
+                showCondition: 'always',
+                safe: 'any_phone',
+                disqualify: '',
+                flag: '',
+                disqualifyMessage: '',
+                screener: [screenerType],
+                category: ['Weightloss']
+            },
+            {
+                id: 'demo-4',
+                name: 'age_verification',
+                questionText: 'Are you 18 years or older?',
+                inputType: 'radio',
+                section: 'Eligibility',
+                questionNumber: 4,
+                showCondition: 'always',
+                safe: 'yes,no',
+                disqualify: 'no',
+                flag: '',
+                disqualifyMessage: 'You must be 18 years or older to use this service.',
+                screener: [screenerType],
+                category: ['Weightloss']
+            },
+            {
+                id: 'demo-5',
+                name: 'weight_goal',
+                questionText: 'What is your weight loss goal?',
+                inputType: 'radio',
+                section: 'Goals',
+                questionNumber: 5,
+                showCondition: 'always',
+                safe: '10-20 pounds,20-40 pounds,40+ pounds',
+                disqualify: '',
+                flag: '',
+                disqualifyMessage: '',
+                screener: [screenerType],
+                category: ['Weightloss']
+            }
+        ];
     }
 
     // Transform Notion data to our internal format
