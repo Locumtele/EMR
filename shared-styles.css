@@ -10,18 +10,50 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     line-height: 1.6;
     color: black;
-    background: transparent;
-    padding: 0;
-    margin: 0;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
     overflow-x: hidden;
+    min-height: auto;
+    height: auto;
 }
 
 .form-container {
     max-width: 900px;
     margin: 0 auto;
-    background: transparent;
+    background: transparent !important;
     border: 1px solid transparent;
     overflow: hidden;
+    padding: 0;
+}
+
+/* Iframe-specific styles - Force override any parent styles */
+html, body {
+    background: transparent !important;
+    background-color: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+}
+
+/* Override any potential parent page styles */
+* {
+    box-sizing: border-box !important;
+}
+
+body * {
+    background-color: transparent !important;
+}
+
+/* Ensure form elements have proper backgrounds */
+.question-group {
+    background: white !important;
+}
+
+.radio-option, .checkbox-option {
+    background: white !important;
 }
 
 .form-content {
