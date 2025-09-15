@@ -68,26 +68,35 @@ function showErrorMessage(errorMsg) {
 
 
 function buildForm(questions) {
+    // Separate file uploads from other questions
+    const fileQuestions = questions.filter(q => q.type === 'file');
+    const nonFileQuestions = questions.filter(q => q.type !== 'file');
+
+    // Group non-file questions by section
     const sections = {};
-    questions.forEach(q => {
+    nonFileQuestions.forEach(q => {
         if (!sections[q.section]) sections[q.section] = [];
         sections[q.section].push(q);
     });
 
     let html = '';
+
+    // Render regular sections
     Object.entries(sections).forEach(([section, qs]) => {
         html += `<div class="question-group"><div class="question-title">${section}</div>`;
         qs.forEach(q => {
             html += renderQuestion(q);
         });
-
-        // Add submit button to the last section
-        if (section === Object.keys(sections)[Object.keys(sections).length - 1]) {
-            html += '<div class="submit-container-center"><button type="submit" class="nav-button">SUBMIT ASSESSMENT</button></div>';
-        }
-
         html += '</div>';
     });
+
+    // Render all file uploads together if any exist
+    if (fileQuestions.length > 0) {
+        html += renderUploadsSection(fileQuestions);
+    }
+
+    // Add submit button at the end
+    html += '<div class="submit-container-center"><button type="submit" class="nav-button">SUBMIT ASSESSMENT</button></div>';
 
     document.getElementById('loading').style.display = 'none';
     const formElement = document.getElementById('form');
@@ -110,7 +119,8 @@ function renderQuestion(q) {
 
     // Start conditional wrapper if needed
     if (isConditional) {
-        html += `<div class="conditional-question conditional-question-${q.id}" ${conditionData} ${isInitiallyHidden}>`;
+        const hiddenClass = shouldHideInitially(q) ? ' form-hidden' : '';
+        html += `<div class="conditional-question conditional-question-${q.id}${hiddenClass}" ${conditionData}>`;
     }
 
     // Render question based on type
@@ -139,6 +149,8 @@ function renderQuestionInput(q) {
         case 'radio':
         case 'checkbox':
             return renderOptions(q);
+        case 'file':
+            return renderFileInput(q);
         case 'text':
         case 'email':
         case 'phone':
@@ -213,6 +225,16 @@ function renderOptions(q) {
         return '<div class="config-error">Configuration Error: No options defined for this question</div>';
     }
 
+    // Sort options: put "no" and "none" options last
+    allOptions.sort((a, b) => {
+        const aIsNegative = a.toLowerCase().includes('no') || a.toLowerCase().includes('none');
+        const bIsNegative = b.toLowerCase().includes('no') || b.toLowerCase().includes('none');
+
+        if (aIsNegative && !bIsNegative) return 1;  // a goes after b
+        if (!aIsNegative && bIsNegative) return -1; // a goes before b
+        return 0; // keep original order for same type
+    });
+
     console.log('Final options to render:', allOptions);
 
     allOptions.forEach((opt, index) => {
@@ -232,6 +254,33 @@ function renderOptions(q) {
 function renderTextInput(q) {
     const placeholder = q.placeholder || `Enter ${q.text.toLowerCase()}`;
     return `<input class="text-input" type="${q.type}" name="${q.id}" placeholder="${placeholder}" data-validation="${q.type}">`;
+}
+
+function renderFileInput(q) {
+    return `<input type="file" name="${q.id}" accept="image/*" class="file-input" data-validation="file">`;
+}
+
+function renderUploadsSection(uploadQuestions) {
+    let html = `<div class="question-group"><div class="question-title">Uploads</div>`;
+
+    if (uploadQuestions.length === 1) {
+        // Single upload - full width
+        html += `<div class="upload-single">`;
+        html += renderQuestion(uploadQuestions[0]);
+        html += `</div>`;
+    } else {
+        // Multiple uploads - 2-column layout
+        html += `<div class="upload-grid">`;
+        uploadQuestions.forEach(q => {
+            html += `<div class="upload-column">`;
+            html += renderQuestion(q);
+            html += `</div>`;
+        });
+        html += `</div>`;
+    }
+
+    html += `</div>`;
+    return html;
 }
 
 function formatOptionText(text) {
@@ -267,8 +316,20 @@ function setupConditionListener(targetElement, condition) {
 
         console.log('Looking for trigger field:', triggerField, 'with value:', triggerValue);
 
-        // Find the trigger input dynamically
-        const triggerInputs = document.querySelectorAll(`input[value="${triggerValue}"]`);
+        // Map field names to question IDs
+        const fieldToIdMap = {
+            'gender': '5',
+            'tobacco': '17'
+        };
+
+        const questionId = fieldToIdMap[triggerField];
+        if (!questionId) {
+            console.warn('Unknown trigger field:', triggerField);
+            return;
+        }
+
+        // Find the trigger input by question ID and value
+        const triggerInputs = document.querySelectorAll(`input[name="${questionId}"][value="${triggerValue}"]`);
         console.log('Found trigger inputs:', triggerInputs);
 
         // Find inputs by value only - no hardcoded field detection
@@ -277,21 +338,24 @@ function setupConditionListener(targetElement, condition) {
 }
 
 function setupInputListener(input, targetElement) {
-    input.addEventListener('change', function() {
-        console.log('Input changed:', this.value, 'checked:', this.checked);
-        if (this.checked) {
-            targetElement.style.display = 'block';
-            console.log('Showing conditional element');
-        } else {
-            // For radio buttons, check if any other radio in the same group is selected
-            const otherRadios = document.querySelectorAll(`input[name="${this.name}"]`);
-            const anyChecked = Array.from(otherRadios).some(radio => radio.checked && radio !== this);
+    // Listen to changes on the entire radio group, not just the target input
+    const radioGroup = document.querySelectorAll(`input[name="${input.name}"]`);
 
-            if (!anyChecked) {
-                targetElement.style.display = 'none';
+    radioGroup.forEach(radio => {
+        radio.addEventListener('change', function() {
+            console.log('Radio changed:', this.value, 'checked:', this.checked);
+
+            if (this.checked && this.value === input.value) {
+                // The target value is selected - show the conditional element
+                targetElement.classList.remove('form-hidden');
+                targetElement.style.display = 'block';
+                console.log('Showing conditional element');
+            } else if (this.checked && this.value !== input.value) {
+                // A different value is selected - hide the conditional element
+                targetElement.classList.add('form-hidden');
                 console.log('Hiding conditional element');
             }
-        }
+        });
     });
 }
 

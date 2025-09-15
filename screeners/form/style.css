@@ -446,6 +446,49 @@ input[type="checkbox"] {
     display: none !important;
 }
 
+/* Upload section layouts */
+.upload-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 16px;
+}
+
+.upload-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.upload-single {
+    margin-top: 16px;
+}
+
+.file-input {
+    padding: 12px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.file-input:hover {
+    border-color: #999;
+}
+
+.file-input:focus {
+    border-color: #007cba;
+    outline: none;
+}
+
+/* Mobile responsive for uploads */
+@media (max-width: 768px) {
+    .upload-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
 .error-container {
     text-align: center;
     padding: 40px;
