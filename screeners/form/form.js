@@ -583,12 +583,40 @@ function collectFormData() {
         }
     }
 
+    // Handle special height/weight combinations for questions that use hardcoded field names
+    const heightFeet = data['height_feet'];
+    const heightInches = data['height_inches'];
+    const weight = data['weight_pounds'];
+
+    // Map these back to their actual question IDs
+    currentQuestions.forEach(q => {
+        if (q.type === 'height_feet' && heightFeet && heightInches) {
+            data[q.id] = `${heightFeet}'${heightInches}"`;
+        }
+        if (q.type === 'weight_pounds' && weight) {
+            data[q.id] = weight;
+        }
+    });
+
     return data;
 }
 
 function validateQuestionFromNotion(question, userValue) {
     // Universal validation based on question configuration from Notion
     const rules = question.validation || {};
+
+    // Check if question is visible (for conditional questions)
+    const questionElement = document.querySelector(`[data-question-id="${question.id}"]`);
+    const isHidden = questionElement && (
+        questionElement.classList.contains('form-hidden') ||
+        questionElement.style.display === 'none' ||
+        questionElement.closest('.form-hidden')
+    );
+
+    // Skip validation for hidden conditional questions
+    if (isHidden) {
+        return { isValid: true, message: '' };
+    }
 
     // Required field check
     if (rules.required !== false && question.required !== false) {
