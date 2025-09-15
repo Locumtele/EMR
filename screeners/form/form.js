@@ -386,12 +386,12 @@ function earlyDisqualify(reason) {
         return;
     }
     
-    // Create red bubble notification inside the question box
+    // Create pink text area notification inside the question box
     const redBubble = document.createElement('div');
     redBubble.id = 'red-bubble-notification';
     redBubble.style.cssText = `
-        background: #dc3545;
-        color: white;
+        background: #f8d7da;
+        color: #721c24;
         padding: 15px 20px;
         border-radius: 8px;
         margin: 15px 0;
@@ -399,8 +399,8 @@ function earlyDisqualify(reason) {
         font-weight: 500;
         font-size: 14px;
         line-height: 1.4;
-        border: 2px solid #c82333;
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        border: 2px solid #f5c6cb;
+        box-shadow: 0 2px 8px rgba(248, 215, 218, 0.3);
         animation: fadeIn 0.3s ease-out;
     `;
     
