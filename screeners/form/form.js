@@ -355,9 +355,26 @@ function checkDisqualifyingConditions(data, questions) {
                 const responses = Array.isArray(userResponse) ? userResponse : [userResponse];
                 for (let response of responses) {
                     if (question.disqualify.includes(response)) {
+                        let message = question.disqualifyMessage || 'You do not meet the requirements for this program.';
+
+                        // Handle special depression message
+                        if (message === 'DEPRESSION_SPECIAL_MESSAGE') {
+                            message = `We care about your safety.
+
+Because you indicated that you are feeling depressed or having thoughts of suicide, you are not eligible to continue with this program/medication at this time.
+
+You are not alone, and help is available:
+• Call or text 988 to connect with the Suicide & Crisis Lifeline.
+• If you are in immediate danger of harming yourself, call 911 or go to the nearest Emergency Department.
+
+Please reach out to a trusted family member, friend, or mental health professional today.
+
+Your wellbeing is our top priority.`;
+                        }
+
                         return {
                             disqualified: true,
-                            message: question.disqualifyMessage || 'You do not meet the requirements for this program.'
+                            message: message
                         };
                     }
                 }
@@ -370,10 +387,14 @@ function checkDisqualifyingConditions(data, questions) {
 // Show disqualification screen
 function showDisqualificationScreen(message) {
     document.getElementById('form').style.display = 'none';
+
+    // Format message with proper line breaks
+    const formattedMessage = message.replace(/\n/g, '<br>');
+
     document.getElementById('loading').innerHTML = `
         <div style="text-align: center; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
             <h2 style="color: #dc3545; margin-bottom: 20px;">Assessment Complete</h2>
-            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px;">${message}</p>
+            <div style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">${formattedMessage}</div>
             <button onclick="location.reload()" style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px;">Start Over</button>
         </div>
     `;
