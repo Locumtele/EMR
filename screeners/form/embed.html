@@ -1,37 +1,58 @@
-<iframe 
-    id="formFrame"
-    src="https://locumtele.github.io/EMR/screeners/form/form.html?screener=GLP1"
-    width="100%" 
-    height="2000" 
-    frameborder="0"
-    style="border: none;">
-</iframe>
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; }
+        iframe { width: 100%; border: none; overflow: hidden; }
+    </style>
+</head>
+<body>
+    <iframe id="formFrame" src="" scrolling="no"></iframe>
 
-<script>
-    // Get screener from URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const screener = urlParams.get('screener') || 'GLP1';
-    const iframe = document.getElementById('formFrame');
-    iframe.src = `https://locumtele.github.io/EMR/screeners/form/form.html?screener=${screener}`;
+    <script>
+        // Get screener parameter and set iframe source
+        const urlParams = new URLSearchParams(window.location.search);
+        const screener = urlParams.get('screener') || 'GLP1';
+        const iframe = document.getElementById('formFrame');
+        iframe.src = `https://locumtele.github.io/EMR/screeners/form/form.html?screener=${screener}`;
 
-    // Listen for height messages from the iframe
-    window.addEventListener('message', function(event) {
-        // Verify origin for security
-        if (event.origin !== 'https://locumtele.github.io') {
-            return;
+        // Auto-resize iframe based on content
+        function resizeIframe() {
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const height = Math.max(
+                    iframeDoc.body.scrollHeight,
+                    iframeDoc.documentElement.scrollHeight,
+                    iframeDoc.body.offsetHeight,
+                    iframeDoc.documentElement.offsetHeight
+                );
+                iframe.style.height = height + 'px';
+                document.body.style.height = height + 'px';
+            } catch (e) {
+                // Fallback if cross-origin
+                iframe.style.height = '100vh';
+            }
         }
 
-        // Update iframe height when form sends height
-        if (event.data && event.data.type === 'resize') {
-            iframe.style.height = event.data.height + 'px';
-        }
+        // Resize when iframe loads
+        iframe.onload = function() {
+            setTimeout(resizeIframe, 100);
+            setTimeout(resizeIframe, 500);
+            setTimeout(resizeIframe, 1000);
+        };
 
-        // Forward GHL redirect events
-        if (event.data && event.data.type === 'ghlRedirect') {
-            const customEvent = new CustomEvent('ghlRedirect', {
-                detail: event.data.detail
-            });
-            window.dispatchEvent(customEvent);
-        }
-    });
-</script>
+        // Listen for messages from iframe
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'resize') {
+                iframe.style.height = event.data.height + 'px';
+                document.body.style.height = event.data.height + 'px';
+            }
+
+            // Forward GHL redirect events
+            if (event.data && event.data.type === 'ghlRedirect') {
+                window.parent.postMessage(event.data, '*');
+            }
+        });
+    </script>
+</body>
+</html>
