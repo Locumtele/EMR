@@ -388,16 +388,44 @@ Your wellbeing is our top priority.`;
 function showDisqualificationScreen(message) {
     document.getElementById('form').style.display = 'none';
 
-    // Format message with proper line breaks
-    const formattedMessage = message.replace(/\n/g, '<br>');
+    // Check if this is the depression message
+    const isDepressionMessage = message.includes('depression') || message.includes('suicide');
 
-    document.getElementById('loading').innerHTML = `
-        <div style="text-align: center; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <h2 style="color: #dc3545; margin-bottom: 20px;">Assessment Complete</h2>
-            <div style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">${formattedMessage}</div>
-            <button onclick="location.reload()" style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px;">Start Over</button>
-        </div>
-    `;
+    let html;
+    if (isDepressionMessage) {
+        // Special formatting for depression/suicide message
+        html = `
+            <div class="disqualification-container">
+                <div class="disqualification-title">We care about your safety.</div>
+                <div class="depression-safety-notice">
+                    <strong>Because you indicated that you are feeling depressed or having thoughts of suicide, you are not eligible to continue with this program/medication at this time.</strong>
+                </div>
+                <div class="depression-message">You are not alone, and help is available:</div>
+                <div class="crisis-resources">
+                    <p>Immediate Help:</p>
+                    <ul>
+                        <li>Call or text <strong>988</strong> to connect with the Suicide & Crisis Lifeline.</li>
+                        <li>If you are in immediate danger of harming yourself, call <strong>911</strong> or go to the nearest Emergency Department.</li>
+                    </ul>
+                </div>
+                <div class="depression-message">Please reach out to a trusted family member, friend, or mental health professional today.</div>
+                <div class="depression-priority">Your wellbeing is our top priority.</div>
+                <button onclick="location.reload()" class="nav-button" style="margin-top: 20px;">Start Over</button>
+            </div>
+        `;
+    } else {
+        // Standard disqualification message
+        const formattedMessage = message.replace(/\n/g, '<br>');
+        html = `
+            <div class="disqualification-container">
+                <div class="disqualification-title">Assessment Complete</div>
+                <div class="depression-message">${formattedMessage}</div>
+                <button onclick="location.reload()" class="nav-button" style="margin-top: 20px;">Start Over</button>
+            </div>
+        `;
+    }
+
+    document.getElementById('loading').innerHTML = html;
     document.getElementById('loading').style.display = 'block';
 }
 
