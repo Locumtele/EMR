@@ -914,47 +914,5 @@ document.getElementById('form').addEventListener('submit', async function(e) {
     }
 });
 
-// Auto-resize iframe functionality
-function sendHeightToParent() {
-    if (window.parent !== window) {
-        const height = Math.max(
-            document.body.scrollHeight,
-            document.body.offsetHeight,
-            document.documentElement.clientHeight,
-            document.documentElement.scrollHeight,
-            document.documentElement.offsetHeight
-        );
-
-        window.parent.postMessage({
-            type: 'resize',
-            height: height
-        }, '*');
-    }
-}
-
-// Send height updates when content changes
-const resizeObserver = new ResizeObserver(() => {
-    sendHeightToParent();
-});
-
-// Observe the main content areas
-document.addEventListener('DOMContentLoaded', function() {
-    resizeObserver.observe(document.body);
-    sendHeightToParent();
-});
-
-// Send height update when form is built
-const originalBuildForm = buildForm;
-buildForm = function(questions) {
-    originalBuildForm(questions);
-    setTimeout(sendHeightToParent, 100); // Small delay to ensure DOM is updated
-};
-
-// Send height update when disqualification screen is shown
-const originalShowDisqualificationScreen = showDisqualificationScreen;
-showDisqualificationScreen = function(message) {
-    originalShowDisqualificationScreen(message);
-    setTimeout(sendHeightToParent, 100);
-};
 
 loadQuestions();

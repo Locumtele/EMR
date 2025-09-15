@@ -49,6 +49,7 @@
             }
         });
 
+
         // Listen for iframe messages (when using embed.html)
         window.addEventListener('message', function(event) {
             // Accept messages from GitHub Pages
@@ -56,6 +57,7 @@
                 return;
             }
 
+            // Handle redirect messages
             if (event.data && event.data.type === 'ghlRedirect') {
                 const category = event.data.detail?.category || event.data.detail?.formType;
                 if (category) {

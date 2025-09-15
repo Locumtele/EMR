@@ -1,8 +1,0 @@
-<script>
-// Get screener from URL and redirect to form with same parameter
-const urlParams = new URLSearchParams(window.location.search);
-const screener = urlParams.get('screener') || 'GLP1';
-
-// Just redirect to the form directly - no iframe needed
-window.location.href = `form.html?screener=${screener}`;
-</script>
