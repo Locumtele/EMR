@@ -50,7 +50,7 @@
         <iframe
             id="assessmentFrame"
             class="assessment-iframe"
-            src="https://locumtele.github.io/EMR/form.html"
+            src="https://locumtele.github.io/EMR/screeners/form/form.html"
             title="Medical Assessment Form"
             loading="lazy">
         </iframe>
@@ -63,7 +63,7 @@
 
         // Update iframe src with screener parameter
         const iframe = document.getElementById('assessmentFrame');
-        iframe.src = `https://locumtele.github.io/EMR/form.html?screener=${screener}`;
+        iframe.src = `https://locumtele.github.io/EMR/screeners/form/form.html?screener=${screener}`;
 
         // Handle iframe load
         iframe.addEventListener('load', function() {
