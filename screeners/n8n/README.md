@@ -26,6 +26,33 @@ This folder contains n8n workflow JSON files for backup and version control.
 
 **Database**: Notion Screeners database (`26e82abf-7eae-80f5-ae8e-eb0c7ecc76f0`)
 
+### telehealth-logic.json
+**Purpose**: Loads telehealth consultation type (sync/async) from Notion database
+
+**Flow**:
+1. **Webhook** (`/telehealth-logic`) - Receives GET request with `screener` parameter
+2. **Notion Query** - Fetches consultation type from "telehealth logic" Notion database
+3. **Response** - Returns sync/async preference for the screener
+
+**Key Features**:
+- Maps screener names to consultation types
+- Returns fallback "sync" if screener not found
+- Simple JSON response format
+
+**Webhook URL**: `https://locumtele.app.n8n.cloud/webhook/telehealth-logic`
+
+**Usage**: `GET /telehealth-logic?screener=weightloss`
+
+**Database**: Notion "telehealth logic" database (`26c82abf-7eae-8047-8575-cf8b3e3a1606`)
+
+**Expected Response**:
+```json
+{
+  "screener": "weightloss",
+  "consult": "async"
+}
+```
+
 ## Import Instructions
 
 1. In n8n, go to Workflows

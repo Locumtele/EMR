@@ -1,0 +1,240 @@
+{
+  "name": "Telehealth Logic API",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "telehealth-logic",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "telehealth-logic"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.query.screener }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "if-1",
+      "name": "Has Screener Param",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "databaseId": "26c82abf-7eae-8047-8575-cf8b3e3a1606",
+        "filterType": "manual",
+        "matchType": "anyFilter",
+        "filters": {
+          "property": [
+            {
+              "key": "screener",
+              "type": "rich_text",
+              "condition": "equals",
+              "value": "={{ $json.query.screener }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "notion-1",
+      "name": "Query Telehealth Logic",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [680, 200],
+      "credentials": {
+        "notionApi": {
+          "id": "YOUR_NOTION_CREDENTIALS_ID",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "if-2",
+      "name": "Found Record",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract consultation type from Notion record\nconst record = $input.all()[0];\nconst screener = $node[\"Webhook\"].json.query.screener;\n\n// Get the consult property value\nconst consultProperty = record.json.properties?.consult;\nlet consultType = 'sync'; // default fallback\n\nif (consultProperty) {\n  // Handle different Notion property types\n  if (consultProperty.select) {\n    consultType = consultProperty.select.name.toLowerCase();\n  } else if (consultProperty.rich_text && consultProperty.rich_text.length > 0) {\n    consultType = consultProperty.rich_text[0].plain_text.toLowerCase();\n  } else if (consultProperty.title && consultProperty.title.length > 0) {\n    consultType = consultProperty.title[0].plain_text.toLowerCase();\n  }\n}\n\n// Ensure valid values\nif (!['sync', 'async'].includes(consultType)) {\n  consultType = 'sync';\n}\n\nreturn {\n  screener: screener,\n  consult: consultType\n};"
+      },
+      "id": "code-1",
+      "name": "Process Record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 120]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return default sync for unknown screeners\nconst screener = $node[\"Webhook\"].json.query.screener || 'unknown';\n\nreturn {\n  screener: screener,\n  consult: 'sync'\n};"
+      },
+      "id": "code-2",
+      "name": "Default Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 280]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return error for missing screener parameter\nreturn {\n  error: 'Missing screener parameter',\n  screener: null,\n  consult: 'sync'\n};"
+      },
+      "id": "code-3",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-1",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 200]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Has Screener Param",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Screener Param": {
+      "main": [
+        [
+          {
+            "node": "Query Telehealth Logic",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Telehealth Logic": {
+      "main": [
+        [
+          {
+            "node": "Found Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Found Record": {
+      "main": [
+        [
+          {
+            "node": "Process Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Default Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Record": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Response": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Response": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-09-15T04:35:04.748Z",
+  "versionId": "1"
+}

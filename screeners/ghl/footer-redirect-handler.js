@@ -13,11 +13,6 @@
         const integration = "{{custom_values.private}}";
         const rootdomain = "{{ custom_values.root_domain }}";
 
-        // States that don't allow async consultations
-        const ASYNC_RESTRICTED_STATES = [
-            'TX', 'CA', 'NY', 'FL', 'NV', 'PA', 'OH', 'NC', 'GA', 'MI', 'IL'
-            // Add states as needed - this list can be updated easily
-        ];
 
         // Define redirect URLs by category and consult type
         const redirectUrls = {
@@ -43,74 +38,31 @@
             }
         };
 
-        // Function to fetch telehealth logic and perform smart redirect
-        async function redirectToConsult(category, userState = null) {
-            try {
-                // Fetch telehealth logic for this screener
-                const telehealthLogic = await fetchTelehealthLogic(category);
+        // Function to perform redirect with consult type
+        function redirectToConsult(category, consultType = 'sync') {
+            // Get the appropriate URL
+            const categoryUrls = redirectUrls[category];
+            if (!categoryUrls) {
+                console.error(`Unknown category: ${category}`);
+                return;
+            }
 
-                // Determine user's state (try parameter first, then location name)
-                const state = userState || extractStateFromLocation(locationName);
-
-                // Determine final consult type
-                let consultType = telehealthLogic?.consult || 'sync'; // default to sync
-
-                // Override async to sync if state is restricted
-                if (consultType === 'async' && state && ASYNC_RESTRICTED_STATES.includes(state.toUpperCase())) {
-                    consultType = 'sync';
-                    console.log(`State ${state} doesn't allow async - switching to sync consult`);
-                }
-
-                // Get the appropriate URL
-                const categoryUrls = redirectUrls[category];
-                if (!categoryUrls) {
-                    console.error(`Unknown category: ${category}`);
-                    return;
-                }
-
-                const baseUrl = categoryUrls[consultType];
-                if (!baseUrl) {
-                    console.error(`No URL configured for ${category} ${consultType}`);
-                    return;
-                }
-
-                // Build final URL with parameters
-                const url = `${baseUrl}?location_id=${encodeURIComponent(locationId)}&location_name=${encodeURIComponent(locationName)}&consult_type=${consultType}`;
-                console.log(`Redirecting to ${category} ${consultType} consult: ${url}`);
-                window.location.href = url;
-
-            } catch (error) {
-                console.error('Error in redirect logic:', error);
-                // Fallback to sync consult
-                const fallbackUrl = redirectUrls[category]?.sync;
+            const baseUrl = categoryUrls[consultType];
+            if (!baseUrl) {
+                console.error(`No URL configured for ${category} ${consultType}`);
+                // Fallback to sync if async URL not configured
+                const fallbackUrl = categoryUrls['sync'];
                 if (fallbackUrl) {
+                    console.log(`Falling back to sync for ${category}`);
                     window.location.href = `${fallbackUrl}?location_id=${encodeURIComponent(locationId)}&location_name=${encodeURIComponent(locationName)}&consult_type=sync`;
                 }
+                return;
             }
-        }
 
-        // Fetch telehealth logic from Notion
-        async function fetchTelehealthLogic(screener) {
-            try {
-                // You'll need to create this n8n endpoint
-                const response = await fetch(`https://locumtele.app.n8n.cloud/webhook/telehealth-logic?screener=${screener}`);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return await response.json();
-            } catch (error) {
-                console.warn('Could not fetch telehealth logic:', error);
-                return { consult: 'sync' }; // Safe default
-            }
-        }
-
-        // Extract state from location name
-        function extractStateFromLocation(locationName) {
-            if (!locationName) return null;
-
-            // Try to extract state from common location name patterns
-            const stateMatch = locationName.match(/,\s*([A-Z]{2})$/i) || // "City, ST"
-                              locationName.match(/\b([A-Z]{2})\b/i);      // Any 2-letter code
-
-            return stateMatch ? stateMatch[1].toUpperCase() : null;
+            // Build final URL with parameters
+            const url = `${baseUrl}?location_id=${encodeURIComponent(locationId)}&location_name=${encodeURIComponent(locationName)}&consult_type=${consultType}`;
+            console.log(`Redirecting to ${category} ${consultType} consult: ${url}`);
+            window.location.href = url;
         }
 
         // Make function globally available for direct calls
@@ -119,10 +71,12 @@
         // Listen for custom events from forms (direct hosting)
         window.addEventListener('ghlRedirect', function(event) {
             const category = event.detail?.category || event.detail?.formType;
+            const consultType = event.detail?.consult_type || 'sync'; // Default to sync
+
             if (category) {
                 // Add small delay to ensure webhook completes
                 setTimeout(function() {
-                    redirectToConsult(category);
+                    redirectToConsult(category, consultType);
                 }, 500);
             }
         });
@@ -138,9 +92,11 @@
             // Handle redirect messages
             if (event.data && event.data.type === 'ghlRedirect') {
                 const category = event.data.detail?.category || event.data.detail?.formType;
+                const consultType = event.data.detail?.consult_type || 'sync'; // Default to sync
+
                 if (category) {
                     setTimeout(function() {
-                        redirectToConsult(category);
+                        redirectToConsult(category, consultType);
                     }, 500);
                 }
             }
@@ -152,9 +108,11 @@
 
             // Check for category data attribute or form class
             const category = form.dataset.category || form.className.match(/category-(\w+)/)?.[1];
+            const consultType = form.dataset.consultType || 'sync'; // Default to sync
+
             if (category && redirectUrls[category]) {
                 setTimeout(function() {
-                    redirectToConsult(category);
+                    redirectToConsult(category, consultType);
                 }, 1000);
             }
         });
