@@ -1,0 +1,44 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get URL parameters from screening form
+    const urlParams = new URLSearchParams(window.location.search);
+    const name = urlParams.get('name');
+    const email = urlParams.get('email');
+    const phone = urlParams.get('phone');
+
+    // Auto-fill checkout form fields
+    if (name) {
+        const nameField = document.querySelector('input[name="full_name"], input[name="name"], #name, input[placeholder*="name" i]');
+        if (nameField) nameField.value = decodeURIComponent(name);
+    }
+
+    if (email) {
+        const emailField = document.querySelector('input[name="email"], #email, input[type="email"]');
+        if (emailField) emailField.value = decodeURIComponent(email);
+    }
+
+    if (phone) {
+        const phoneField = document.querySelector('input[name="phone"], #phone, input[type="tel"]');
+        if (phoneField) phoneField.value = decodeURIComponent(phone);
+    }
+
+    // Store data for next page when checkout completes
+    const checkoutForm = document.querySelector('form');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            // Get current form values (in case user modified them)
+            const currentName = document.querySelector('input[name="full_name"], input[name="name"]');
+            const currentEmail = document.querySelector('input[type="email"]');
+            const currentPhone = document.querySelector('input[type="tel"]');
+
+            const contactData = {
+                name: currentName ? currentName.value : name,
+                email: currentEmail ? currentEmail.value : email,
+                phone: currentPhone ? currentPhone.value : phone
+            };
+
+            localStorage.setItem('contactData', JSON.stringify(contactData));
+        });
+    }
+});
+</script>

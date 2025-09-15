@@ -1,0 +1,148 @@
+{
+  "name": "Patient 1. Load Screener on Site",
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        600,
+        -20
+      ],
+      "id": "a5dac84b-1231-4a83-8ac4-fb14e3729669",
+      "name": "form"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/notion-questions",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        -20
+      ],
+      "id": "8e96d348-431b-4ce0-8d8b-f32902d36344",
+      "name": "siteLoad1",
+      "webhookId": "26476008-6e97-485a-b7d3-1628535f69a2",
+      "notes": "This webhook serves as a proxy between the browser and Notion API to avoid CORS restrictions.\n"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "26e82abf-7eae-80f5-ae8e-eb0c7ecc76f0",
+          "mode": "list",
+          "cachedResultName": "Screeners",
+          "cachedResultUrl": "https://www.notion.so/26e82abf7eae80f5ae8eeb0c7ecc76f0"
+        },
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Screener|multi_select",
+              "condition": "contains",
+              "multiSelectValue": "={{ $json.body.screenerType }}"
+            }
+          ]
+        },
+        "options": {
+          "sort": {
+            "sortValue": [
+              {
+                "key": "Question Number|number",
+                "direction": "ascending"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        180,
+        -20
+      ],
+      "id": "3a48a981-38e7-4181-8de1-96374d57fa34",
+      "name": "formQs1",
+      "retryOnFail": true,
+      "credentials": {
+        "notionApi": {
+          "id": "2cRjlJLJXPGlwjnP",
+          "name": "Notion - LocumTele"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "  // Get the input data - N8N is sending an array directly\n  const results = $input.all().map(item => item.json);\n\n  console.log(`Processing ${results.length} total questions`);\n\n  const configs = [];\n  const screenerGroups = {};\n\n  results.forEach(item => {\n    // Extract screener name from the property_screener array\n    const screenerName = item.property_screener?.[0]; // It's an array, get first element\n\n    if (!screenerName) {\n      console.log('No screener name found for item:', item.name);\n      return;\n    }\n\n    if (!screenerGroups[screenerName]) {\n      screenerGroups[screenerName] = [];\n    }\n\n    // Parse comma-separated values for multi-select fields\n    const parseCommaSeparated = (str) => {\n      if (!str || str === '') return [];\n      return str.split(',').map(s => s.trim()).filter(s => s !== '');\n    };\n\n    screenerGroups[screenerName].push({\n      id: item.property_question_number || 0,\n      section: item.property_section || '',\n      text: item.property_question_text || '',\n      type: item.property_input_type || 'text',\n      safe: parseCommaSeparated(item.property_safe),\n      flag: parseCommaSeparated(item.property_flag),\n      disqualify: parseCommaSeparated(item.property_disqualify),\n      disqualifyMessage: item.property_disqualify_message || '',\n      showCondition: item.property_show_condition || 'always',\n      category: item.property_category?.[0] || '' // Also an array\n    });\n  });\n\n  console.log('Screener groups created:', Object.keys(screenerGroups));\n\n  // Create JSON config for each screener\n  Object.entries(screenerGroups).forEach(([screenerName, questions]) => {\n    const sortedQuestions = questions.sort((a, b) => a.id - b.id);\n\n    const config = {\n      screener: screenerName,\n      category: sortedQuestions[0]?.category || '',\n      lastUpdated: new Date().toISOString(),\n      totalQuestions: sortedQuestions.length,\n      questions: sortedQuestions\n    };\n\n    configs.push({\n      filename: `centralized/form-configs/configs/${screenerName.toLowerCase()}.json`,\n      content: JSON.stringify(config, null, 2),\n      screener: screenerName,\n      category: config.category\n    });\n  });\n\n  console.log(`Generated ${configs.length} config files:`, configs.map(c => `${c.screener} (${c.category})`));\n\n  return configs.map(config => ({ json: config }));\n\n   return configs.map(config => ({\n    json: {\n      screener: config.screener,\n      category: config.category || '',\n      questions: config.questions\n    }\n  }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -20
+      ],
+      "id": "c0601c88-c00a-42ee-91da-02392f8c9d57",
+      "name": "file",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "siteLoad1": {
+      "main": [
+        [
+          {
+            "node": "formQs1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "formQs1": {
+      "main": [
+        [
+          {
+            "node": "file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "file": {
+      "main": [
+        [
+          {
+            "node": "form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a66cb226-f9d7-4c3b-8537-435b4fef5895",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0cfb86e2c6c2e226866ff41cc707f3a9b8926fb8927c71cbe96976f4c72ca4ed"
+  },
+  "id": "IppOxuhuUdqLGAxq",
+  "tags": []
+}

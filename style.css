@@ -174,11 +174,23 @@ html, body {
     border-color: #999;
 }
 
-.checkbox-option input[type="checkbox"] {
+.checkbox-option input[type="checkbox"],
+.checkbox-option input[type="radio"] {
     width: 20px;
     height: 20px;
     margin-top: 2px;
     flex-shrink: 0;
+}
+
+/* Ensure all radio buttons and checkboxes are properly sized */
+input[type="radio"],
+input[type="checkbox"] {
+    width: 20px !important;
+    height: 20px !important;
+    margin-right: 8px;
+    margin-top: 0;
+    margin-bottom: 0;
+    transform: scale(1);
 }
 
 .checkbox-option label {
@@ -225,7 +237,7 @@ html, body {
 }
 
 .text-input {
-    height: 50px;
+    height: 45px;
 }
 
 .textarea-input {
@@ -360,6 +372,7 @@ html, body {
         padding: 12px;
         font-size: 16px; /* Prevents zoom on iOS */
     }
+
     
     .textarea-input {
         min-height: 80px;
