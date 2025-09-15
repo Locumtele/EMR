@@ -1,11 +1,10 @@
-// Working Simple Form System - JSON Only
+// Working Simple Form System
 const CONFIG = {
-    screener: new URLSearchParams(window.location.search).get('screener') || 'GLP1'
+    screener: new URLSearchParams(window.location.search).get('screener') || 'GLP1',
+    questionsEndpoint: 'https://locumtele.app.n8n.cloud/webhook/notion-questions',
+    telehealthEndpoint: 'https://locumtele.app.n8n.cloud/webhook/telehealth-logic',
+    submitEndpoint: 'https://locumtele.app.n8n.cloud/webhook/patient-screener'
 };
-
-CONFIG.questionsEndpoint = `https://locumtele.github.io/EMR/screeners/data/${CONFIG.screener.toLowerCase()}.json`;
-CONFIG.telehealthEndpoint = `https://locumtele.github.io/EMR/screeners/data/telehealth-logic.json`;
-CONFIG.submitEndpoint = 'https://locumtele.app.n8n.cloud/webhook/patient-screener';
 
 let currentQuestions = [];
 let screenerCategory = '';
@@ -15,7 +14,7 @@ async function loadQuestions() {
     console.log('Loading questions from:', CONFIG.questionsEndpoint);
 
     try {
-        const response = await fetch(CONFIG.questionsEndpoint);
+        const response = await fetch(`${CONFIG.questionsEndpoint}?screener=${CONFIG.screener}`);
         console.log('Response status:', response.status, response.statusText);
 
         if (!response.ok) {
@@ -25,9 +24,19 @@ async function loadQuestions() {
         const data = await response.json();
         console.log('Data loaded:', data);
 
-        // Handle direct JSON format
-        const questions = data.questions;
-        const category = data.category;
+        // Handle Notion webhook response format
+        let questions, category;
+        if (Array.isArray(data) && data.length > 0) {
+            // Parse the content field which contains the JSON string
+            const content = JSON.parse(data[0].content);
+            questions = content.questions;
+            category = content.category;
+        } else if (data.questions) {
+            questions = data.questions;
+            category = data.category;
+        } else {
+            throw new Error('No questions found in response');
+        }
 
         if (!questions || questions.length === 0) {
             throw new Error('No questions found in response');
@@ -97,20 +106,8 @@ function buildForm(questions) {
 function renderQuestion(q) {
     let inputHtml = '';
 
-    if (q.type === 'text') {
-        inputHtml = `<input class="text-input" type="text" name="${q.id}" placeholder="Enter ${q.text.toLowerCase()}" maxlength="100">`;
-    }
-    else if (q.type === 'email') {
-        inputHtml = `<input class="text-input" type="email" name="${q.id}" placeholder="Enter your email address" maxlength="100">`;
-    }
-    else if (q.type === 'phone') {
-        inputHtml = `<input class="text-input" type="tel" name="${q.id}" placeholder="(555) 123-4567" maxlength="15" pattern="[0-9\\-\\(\\)\\+\\s]+">`;
-    }
-    else if (q.type === 'date') {
-        inputHtml = `<input class="text-input" type="date" name="${q.id}" max="${new Date().toISOString().split('T')[0]}">`;
-    }
-    else if (q.type === 'number') {
-        inputHtml = `<input class="text-input" type="number" name="${q.id}" placeholder="Enter number" min="0">`;
+    if (q.type === 'text' || q.type === 'email' || q.type === 'phone' || q.type === 'date' || q.type === 'number') {
+        inputHtml = `<input class="text-input" type="${q.type}" name="${q.id}" placeholder="Enter ${q.text.toLowerCase()}">`;
     }
     else if (q.type === 'checkbox') {
         const allOptions = [...new Set([...(q.safe || []), ...(q.flag || []), ...(q.disqualify || [])])];
@@ -127,11 +124,9 @@ function renderQuestion(q) {
         inputHtml = '<div class="checkbox-group">';
         allOptions.forEach((opt, index) => {
             const cleanOpt = opt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            const isDisqualifying = q.disqualify && q.disqualify.includes(opt);
-            const changeHandler = isDisqualifying ? `onchange="checkInstantDisqualification('${q.id}', '${opt}', '${q.disqualifyMessage || ''}')"` : '';
             inputHtml += `
                 <div class="checkbox-option">
-                    <input type="checkbox" id="q${q.id}_${index}" name="${q.id}" value="${opt}" ${changeHandler}>
+                    <input type="checkbox" id="q${q.id}_${index}" name="${q.id}" value="${opt}">
                     <label for="q${q.id}_${index}">${cleanOpt}</label>
                 </div>`;
         });
@@ -212,40 +207,6 @@ function setupConditionalLogic() {
             });
         });
         console.log('Gender -> pregnancy logic setup');
-    }
-
-    // Handle other GLP-1s -> details question
-    const otherGlp1Inputs = document.querySelectorAll('input[name="12"]'); // Medications question ID 12
-    const otherGlp1DetailsQuestion = document.querySelector('[data-show-if="if_other_glp1s_selected"]');
-
-    if (otherGlp1Inputs.length > 0 && otherGlp1DetailsQuestion) {
-        otherGlp1Inputs.forEach(input => {
-            input.addEventListener('change', function() {
-                if (this.checked && this.value === 'other_glp1s') {
-                    otherGlp1DetailsQuestion.style.display = 'block';
-                } else if (this.checked && this.value !== 'other_glp1s') {
-                    otherGlp1DetailsQuestion.style.display = 'none';
-                }
-            });
-        });
-        console.log('Other GLP-1s -> details logic setup');
-    }
-
-    // Handle tobacco -> details question
-    const tobaccoInputs = document.querySelectorAll('input[name="19"]'); // Tobacco question ID 19
-    const tobaccoDetailsQuestion = document.querySelector('[data-show-if="if_tobacco_yes"]');
-
-    if (tobaccoInputs.length > 0 && tobaccoDetailsQuestion) {
-        tobaccoInputs.forEach(input => {
-            input.addEventListener('change', function() {
-                if (this.checked && this.value === 'yes') {
-                    tobaccoDetailsQuestion.style.display = 'block';
-                } else if (this.checked && this.value !== 'yes') {
-                    tobaccoDetailsQuestion.style.display = 'none';
-                }
-            });
-        });
-        console.log('Tobacco -> details logic setup');
     }
 }
 
@@ -369,26 +330,9 @@ function checkDisqualifyingConditions(data, questions) {
                 const responses = Array.isArray(userResponse) ? userResponse : [userResponse];
                 for (let response of responses) {
                     if (question.disqualify.includes(response)) {
-                        let message = question.disqualifyMessage || 'You do not meet the requirements for this program.';
-
-                        // Handle special depression message
-                        if (message === 'DEPRESSION_SPECIAL_MESSAGE') {
-                            message = `We care about your safety.
-
-Because you indicated that you are feeling depressed or having thoughts of suicide, you are not eligible to continue with this program/medication at this time.
-
-You are not alone, and help is available:
-• Call or text 988 to connect with the Suicide & Crisis Lifeline.
-• If you are in immediate danger of harming yourself, call 911 or go to the nearest Emergency Department.
-
-Please reach out to a trusted family member, friend, or mental health professional today.
-
-Your wellbeing is our top priority.`;
-                        }
-
                         return {
                             disqualified: true,
-                            message: message
+                            message: question.disqualifyMessage || 'You do not meet the requirements for this program.'
                         };
                     }
                 }
@@ -401,45 +345,13 @@ Your wellbeing is our top priority.`;
 // Show disqualification screen
 function showDisqualificationScreen(message) {
     document.getElementById('form').style.display = 'none';
-
-    // Check if this is the depression message
-    const isDepressionMessage = message.includes('depression') || message.includes('suicide');
-
-    let html;
-    if (isDepressionMessage) {
-        // Special formatting for depression/suicide message
-        html = `
-            <div class="disqualification-container">
-                <div class="disqualification-title">We care about your safety.</div>
-                <div class="depression-safety-notice">
-                    <strong>Because you indicated that you are feeling depressed or having thoughts of suicide, you are not eligible to continue with this program/medication at this time.</strong>
-                </div>
-                <div class="depression-message">You are not alone, and help is available:</div>
-                <div class="crisis-resources">
-                    <p>Immediate Help:</p>
-                    <ul>
-                        <li>Call or text <strong>988</strong> to connect with the Suicide & Crisis Lifeline.</li>
-                        <li>If you are in immediate danger of harming yourself, call <strong>911</strong> or go to the nearest Emergency Department.</li>
-                    </ul>
-                </div>
-                <div class="depression-message">Please reach out to a trusted family member, friend, or mental health professional today.</div>
-                <div class="depression-priority">Your wellbeing is our top priority.</div>
-                <button onclick="location.reload()" class="nav-button" style="margin-top: 20px;">Start Over</button>
-            </div>
-        `;
-    } else {
-        // Standard disqualification message
-        const formattedMessage = message.replace(/\n/g, '<br>');
-        html = `
-            <div class="disqualification-container">
-                <div class="disqualification-title">Assessment Complete</div>
-                <div class="depression-message">${formattedMessage}</div>
-                <button onclick="location.reload()" class="nav-button" style="margin-top: 20px;">Start Over</button>
-            </div>
-        `;
-    }
-
-    document.getElementById('loading').innerHTML = html;
+    document.getElementById('loading').innerHTML = `
+        <div style="text-align: center; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h2 style="color: #dc3545; margin-bottom: 20px;">Assessment Complete</h2>
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px;">${message}</p>
+            <button onclick="location.reload()" style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px;">Start Over</button>
+        </div>
+    `;
     document.getElementById('loading').style.display = 'block';
 }
 
@@ -470,11 +382,11 @@ document.getElementById('form').addEventListener('submit', async function(e) {
 
     try {
         // Load telehealth logic
-        const telehealthResponse = await fetch(CONFIG.telehealthEndpoint);
+        const telehealthResponse = await fetch(`${CONFIG.telehealthEndpoint}?screener=${CONFIG.screener}`);
         const telehealthData = await telehealthResponse.json();
-        const screenerLogic = telehealthData[CONFIG.screener];
+        const screenerLogic = telehealthData;
 
-        // Submit to n8n webhook
+        // Submit to n8n
         await fetch(CONFIG.submitEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -509,7 +421,6 @@ document.getElementById('form').addEventListener('submit', async function(e) {
         alert('Error submitting form. Please try again.');
     }
 });
-
 
 // Initialize
 document.addEventListener('DOMContentLoaded', loadQuestions);
