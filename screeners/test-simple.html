@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Simple Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .question { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .checkbox-option { margin: 5px 0; }
+        .text-input { width: 100%; padding: 8px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1 id="title">Loading...</h1>
+    <div id="content">Loading questions...</div>
+
+    <script>
+        async function testLoad() {
+            try {
+                console.log('Starting test load...');
+
+                const url = 'https://locumtele.github.io/EMR/screeners/data/glp1.json';
+                console.log('Fetching from:', url);
+
+                const response = await fetch(url);
+                console.log('Response:', response.status, response.statusText);
+
+                const data = await response.json();
+                console.log('Data received:', data);
+
+                if (!data.questions) {
+                    throw new Error('No questions in data');
+                }
+
+                document.getElementById('title').textContent = data.category + ' Assessment';
+
+                // Render first 3 questions only for testing
+                let html = '';
+                data.questions.slice(0, 3).forEach(q => {
+                    html += `<div class="question">
+                        <strong>${q.text}</strong><br>
+                        Type: ${q.type}<br>
+                        Options: ${JSON.stringify(q.safe || [])}
+                    </div>`;
+                });
+
+                document.getElementById('content').innerHTML = html;
+
+            } catch (error) {
+                console.error('Test failed:', error);
+                document.getElementById('content').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        testLoad();
+    </script>
+</body>
+</html>
