@@ -8,18 +8,21 @@ This folder contains n8n workflow JSON files for backup and version control.
 **Purpose**: Loads screening questions from Notion database for form display
 
 **Flow**:
-1. **Webhook** (`/notion-questions`) - Receives POST request with `screenerType` and `databaseId`
+1. **Webhook** (`/emr-screener-questions`) - Receives GET request with `screener` parameter
 2. **Notion Query** - Fetches questions from Notion database filtered by screener type
 3. **JavaScript Processing** - Transforms and organizes questions by screener type
 4. **Response** - Returns formatted questions to the form
 
 **Key Features**:
-- Filters questions by screener type (GLP1, NAD, Sermorelin, Testosterone)
+- Filters questions by screener type (weightloss, antiaging, sexualhealth, hormone, hairskin)
 - Sorts questions by question number
 - Processes multi-select fields (safe, flag, disqualify options)
+- Supports conditional logic (showCondition field)
 - Returns structured JSON with questions, validation rules, and disqualification messages
 
-**Webhook URL**: `https://locumtele.app.n8n.cloud/webhook/notion-questions`
+**Current Webhook URL**: `https://locumtele.app.n8n.cloud/webhook/emr-screener-questions`
+
+**Usage**: `GET /emr-screener-questions?screener=weightloss`
 
 **Database**: Notion Screeners database (`26e82abf-7eae-80f5-ae8e-eb0c7ecc76f0`)
 

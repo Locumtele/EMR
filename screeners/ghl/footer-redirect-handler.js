@@ -13,26 +13,104 @@
         const integration = "{{custom_values.private}}";
         const rootdomain = "{{ custom_values.root_domain }}";
 
-        // Define redirect URLs using GHL custom values by category
+        // States that don't allow async consultations
+        const ASYNC_RESTRICTED_STATES = [
+            'TX', 'CA', 'NY', 'FL', 'NV', 'PA', 'OH', 'NC', 'GA', 'MI', 'IL'
+            // Add states as needed - this list can be updated easily
+        ];
+
+        // Define redirect URLs by category and consult type
         const redirectUrls = {
-            weightloss: `${rootdomain}/weightloss-fee`,
-            antiaging: `${rootdomain}/antiaging-fee`,
-            sexualHealth: `${rootdomain}/sexualhealth-fee`,
-            hormone: `${rootdomain}/hormone-fee`,
-            hairSkin: `${rootdomain}/hairandskin-fee`,
+            weightloss: {
+                sync: `${rootdomain}/weightloss-sync-fee`,
+                async: `${rootdomain}/weightloss-async-fee`
+            },
+            antiaging: {
+                sync: `${rootdomain}/antiaging-sync-fee`,
+                async: `${rootdomain}/antiaging-async-fee`
+            },
+            sexualHealth: {
+                sync: `${rootdomain}/sexualhealth-sync-fee`,
+                async: `${rootdomain}/sexualhealth-async-fee`
+            },
+            hormone: {
+                sync: `${rootdomain}/hormone-sync-fee`,
+                async: `${rootdomain}/hormone-async-fee`
+            },
+            hairSkin: {
+                sync: `${rootdomain}/hairandskin-sync-fee`,
+                async: `${rootdomain}/hairandskin-async-fee`
+            }
         };
 
-        // Function to perform redirect
-        function redirectToConsult(category) {
-            const baseUrl = redirectUrls[category];
-            if (baseUrl) {
-                // Append location ID and name as query parameters
-                const url = `${baseUrl}?location_id=${encodeURIComponent(locationId)}&location_name=${encodeURIComponent(locationName)}`;
-                console.log(`Redirecting to ${category} consult: ${url}`);
+        // Function to fetch telehealth logic and perform smart redirect
+        async function redirectToConsult(category, userState = null) {
+            try {
+                // Fetch telehealth logic for this screener
+                const telehealthLogic = await fetchTelehealthLogic(category);
+
+                // Determine user's state (try parameter first, then location name)
+                const state = userState || extractStateFromLocation(locationName);
+
+                // Determine final consult type
+                let consultType = telehealthLogic?.consult || 'sync'; // default to sync
+
+                // Override async to sync if state is restricted
+                if (consultType === 'async' && state && ASYNC_RESTRICTED_STATES.includes(state.toUpperCase())) {
+                    consultType = 'sync';
+                    console.log(`State ${state} doesn't allow async - switching to sync consult`);
+                }
+
+                // Get the appropriate URL
+                const categoryUrls = redirectUrls[category];
+                if (!categoryUrls) {
+                    console.error(`Unknown category: ${category}`);
+                    return;
+                }
+
+                const baseUrl = categoryUrls[consultType];
+                if (!baseUrl) {
+                    console.error(`No URL configured for ${category} ${consultType}`);
+                    return;
+                }
+
+                // Build final URL with parameters
+                const url = `${baseUrl}?location_id=${encodeURIComponent(locationId)}&location_name=${encodeURIComponent(locationName)}&consult_type=${consultType}`;
+                console.log(`Redirecting to ${category} ${consultType} consult: ${url}`);
                 window.location.href = url;
-            } else {
-                console.error(`Unknown category: ${category}`);
+
+            } catch (error) {
+                console.error('Error in redirect logic:', error);
+                // Fallback to sync consult
+                const fallbackUrl = redirectUrls[category]?.sync;
+                if (fallbackUrl) {
+                    window.location.href = `${fallbackUrl}?location_id=${encodeURIComponent(locationId)}&location_name=${encodeURIComponent(locationName)}&consult_type=sync`;
+                }
             }
+        }
+
+        // Fetch telehealth logic from Notion
+        async function fetchTelehealthLogic(screener) {
+            try {
+                // You'll need to create this n8n endpoint
+                const response = await fetch(`https://locumtele.app.n8n.cloud/webhook/telehealth-logic?screener=${screener}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.warn('Could not fetch telehealth logic:', error);
+                return { consult: 'sync' }; // Safe default
+            }
+        }
+
+        // Extract state from location name
+        function extractStateFromLocation(locationName) {
+            if (!locationName) return null;
+
+            // Try to extract state from common location name patterns
+            const stateMatch = locationName.match(/,\s*([A-Z]{2})$/i) || // "City, ST"
+                              locationName.match(/\b([A-Z]{2})\b/i);      // Any 2-letter code
+
+            return stateMatch ? stateMatch[1].toUpperCase() : null;
         }
 
         // Make function globally available for direct calls

@@ -38,25 +38,31 @@ These codes are referenced and embedded within GoHighLevel pages and funnels. Ke
 2. **Checkout Page** → Auto-fills with screening data → **Checkout Autofill** → Calendar page
 3. **Calendar Page** → Booking completion → **Calendar Redirect** → Confirmation page
 
-## NEW: GitHub Pages + Iframe Workflow
+## CURRENT: GitHub Pages + Direct Iframe Workflow
 
-### Recommended Setup:
-- **Forms hosted on**: `https://locumtele.github.io/EMR/`
-- **Embed in GHL using**: iframe to `embed.html`
-- **Benefits**: Single source of truth, automatic updates, auto-resizing
+### Current Setup:
+- **Forms hosted on**: `https://locumtele.github.io/EMR/screeners/form/form.html`
+- **Embed in GHL using**: Direct iframe to form.html
+- **Benefits**: Single source of truth, automatic updates, flexbox sizing
 
-### Updated Footer Handler:
-The `footer-redirect-handler.js` now supports **both**:
-- Direct form hosting (legacy)
-- **Iframe embedding** (new recommended method)
+### Footer Handler Features:
+The `footer-redirect-handler.js` supports:
+- Cross-origin redirect events from GitHub Pages forms
+- Category-based redirects: weightloss, antiaging, sexualhealth, hormone, hairskin
+- GHL merge field integration for location data
 
-### Example GHL Iframe:
+### Current GHL Iframe Usage:
 ```html
-<iframe src="https://locumtele.github.io/EMR/embed.html?screener=GLP1"
+<iframe src="https://locumtele.github.io/EMR/screeners/form/form.html?screener=weightloss"
         width="100%"
         height="600"
         frameborder="0">
 </iframe>
 ```
 
-**Important**: Height will auto-adjust, no scrolling needed!
+### Recent Form Improvements:
+- **Dynamic question loading** from Notion database
+- **Conditional logic** (pregnancy questions show only for females)
+- **Sorted options** (No/None options appear last in multi-select)
+- **Enhanced uploads section** with 2-column layout for photos and ID
+- **Mobile responsive** design with optimized layouts
