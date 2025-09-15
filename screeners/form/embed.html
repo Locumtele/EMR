@@ -1,68 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { margin: 0; padding: 0; }
-        iframe { width: 100%; border: none; display: block; }
-    </style>
-</head>
-<body>
-    <iframe id="formFrame" src="" scrolling="no"></iframe>
+<script>
+// Get screener from URL and redirect to form with same parameter
+const urlParams = new URLSearchParams(window.location.search);
+const screener = urlParams.get('screener') || 'GLP1';
 
-    <script>
-        // Get screener parameter and set iframe source
-        const urlParams = new URLSearchParams(window.location.search);
-        const screener = urlParams.get('screener') || 'GLP1';
-        const iframe = document.getElementById('formFrame');
-        iframe.src = `https://locumtele.github.io/EMR/screeners/form/form.html?screener=${screener}`;
-
-        // Auto-resize iframe based on content
-        function resizeIframe() {
-            try {
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                const height = Math.max(
-                    iframeDoc.body.scrollHeight,
-                    iframeDoc.documentElement.scrollHeight,
-                    iframeDoc.body.offsetHeight,
-                    iframeDoc.documentElement.offsetHeight
-                );
-                iframe.style.height = height + 'px';
-                document.body.style.height = height + 'px';
-            } catch (e) {
-                // Fallback if cross-origin
-                iframe.style.height = '100vh';
-            }
-        }
-
-        // Resize when iframe loads
-        iframe.onload = function() {
-            setTimeout(resizeIframe, 100);
-            setTimeout(resizeIframe, 500);
-            setTimeout(resizeIframe, 1000);
-        };
-
-        // Listen for messages from iframe
-        window.addEventListener('message', function(event) {
-            if (event.origin !== 'https://locumtele.github.io') return;
-
-            if (event.data && event.data.type === 'resize') {
-                // Make iframe exactly the right height for its content
-                iframe.style.height = event.data.height + 'px';
-
-                // Tell the parent GHL page to resize this iframe too
-                if (window.parent !== window) {
-                    window.parent.postMessage({
-                        type: 'resize',
-                        height: event.data.height
-                    }, '*');
-                }
-            }
-
-            // Forward GHL redirect events
-            if (event.data && event.data.type === 'ghlRedirect') {
-                window.parent.postMessage(event.data, '*');
-            }
-        });
-    </script>
-</body>
-</html>
+// Just redirect to the form directly - no iframe needed
+window.location.href = `form.html?screener=${screener}`;
+</script>
