@@ -1,0 +1,17 @@
+{
+  "GLP1": {
+    "screener": "GLP1",
+    "category": "Weightloss",
+    "consult": "sync"
+  },
+  "NAD": {
+    "screener": "NAD",
+    "category": "NAD",
+    "consult": "sync"
+  },
+  "Semorelin": {
+    "screener": "Semorelin",
+    "category": "Semorelin",
+    "consult": "sync"
+  }
+}

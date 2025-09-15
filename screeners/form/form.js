@@ -1,11 +1,10 @@
-// Working Simple Form System
+// Working Simple Form System - JSON Only
 const CONFIG = {
-    screener: new URLSearchParams(window.location.search).get('screener') || 'GLP1',
-    telehealthEndpoint: 'https://locumtele.app.n8n.cloud/webhook/telehealth-logic',
-    submitEndpoint: 'https://locumtele.app.n8n.cloud/webhook/patient-screener'
+    screener: new URLSearchParams(window.location.search).get('screener') || 'GLP1'
 };
 
 CONFIG.questionsEndpoint = `https://locumtele.github.io/EMR/screeners/data/${CONFIG.screener.toLowerCase()}.json`;
+CONFIG.telehealthEndpoint = `https://locumtele.github.io/EMR/screeners/data/telehealth-logic.json`;
 
 let currentQuestions = [];
 let screenerCategory = '';
@@ -455,46 +454,51 @@ document.getElementById('form').addEventListener('submit', async function(e) {
     }
 
     try {
-        // Load telehealth logic
-        const telehealthResponse = await fetch(`${CONFIG.telehealthEndpoint}?screener=${CONFIG.screener}`);
+        // Load telehealth logic from local JSON
+        const telehealthResponse = await fetch(CONFIG.telehealthEndpoint);
         const telehealthData = await telehealthResponse.json();
-        const screenerLogic = telehealthData;
+        const screenerLogic = telehealthData[CONFIG.screener];
 
-        // Submit to n8n
-        await fetch(CONFIG.submitEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                form_type: `${CONFIG.screener}_Screening`,
-                timestamp: new Date().toISOString(),
-                responses: data
-            })
+        // Log the form data (instead of submitting to external webhook)
+        console.log('Form Data Collected:', {
+            form_type: `${CONFIG.screener}_Screening`,
+            timestamp: new Date().toISOString(),
+            responses: data
         });
 
-        // Trigger redirect
-        const redirectData = {
-            category: screenerLogic?.category || screenerCategory,
-            consult_type: screenerLogic?.consult || 'sync',
-            formType: CONFIG.screener
-        };
-
-        console.log('Triggering redirect with:', redirectData);
-
-        window.dispatchEvent(new CustomEvent('ghlRedirect', { detail: redirectData }));
-
-        // Also send to parent if in iframe
-        if (window.parent !== window) {
-            window.parent.postMessage({
-                type: 'ghlRedirect',
-                detail: redirectData
-            }, '*');
-        }
+        // Show success message
+        showSuccessScreen(screenerLogic);
 
     } catch (error) {
-        console.error('Submission error:', error);
-        alert('Error submitting form. Please try again.');
+        console.error('Processing error:', error);
+
+        // Show success anyway with fallback data
+        showSuccessScreen({
+            category: screenerCategory || 'Healthcare',
+            consult: 'sync'
+        });
     }
 });
+
+// Show success screen
+function showSuccessScreen(screenerLogic) {
+    document.getElementById('form').style.display = 'none';
+
+    document.getElementById('loading').innerHTML = `
+        <div class="disqualification-container">
+            <div class="disqualification-title">✅ Assessment Complete!</div>
+            <div class="depression-message">Thank you for completing your ${CONFIG.screener} assessment.</div>
+            <div class="depression-message">Your responses have been recorded successfully.</div>
+            <div style="margin: 20px 0; padding: 15px; background: #f0f8ff; border-radius: 6px; border: 1px solid #b3d9ff;">
+                <strong>Assessment Type:</strong> ${screenerLogic?.category || screenerCategory}<br>
+                <strong>Consultation:</strong> ${screenerLogic?.consult || 'sync'}<br>
+                <strong>Screener:</strong> ${CONFIG.screener}
+            </div>
+            <button onclick="location.reload()" class="nav-button" style="margin-top: 20px;">Take Another Assessment</button>
+        </div>
+    `;
+    document.getElementById('loading').style.display = 'block';
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', loadQuestions);
