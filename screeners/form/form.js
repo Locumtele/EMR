@@ -5,6 +5,7 @@ const CONFIG = {
 
 CONFIG.questionsEndpoint = `https://locumtele.github.io/EMR/screeners/data/${CONFIG.screener.toLowerCase()}.json`;
 CONFIG.telehealthEndpoint = `https://locumtele.github.io/EMR/screeners/data/telehealth-logic.json`;
+CONFIG.submitEndpoint = 'https://locumtele.app.n8n.cloud/webhook/patient-screener';
 
 let currentQuestions = [];
 let screenerCategory = '';
@@ -96,8 +97,20 @@ function buildForm(questions) {
 function renderQuestion(q) {
     let inputHtml = '';
 
-    if (q.type === 'text' || q.type === 'email' || q.type === 'phone' || q.type === 'date' || q.type === 'number') {
-        inputHtml = `<input class="text-input" type="${q.type}" name="${q.id}" placeholder="Enter ${q.text.toLowerCase()}">`;
+    if (q.type === 'text') {
+        inputHtml = `<input class="text-input" type="text" name="${q.id}" placeholder="Enter ${q.text.toLowerCase()}" maxlength="100">`;
+    }
+    else if (q.type === 'email') {
+        inputHtml = `<input class="text-input" type="email" name="${q.id}" placeholder="Enter your email address" maxlength="100">`;
+    }
+    else if (q.type === 'phone') {
+        inputHtml = `<input class="text-input" type="tel" name="${q.id}" placeholder="(555) 123-4567" maxlength="15" pattern="[0-9\\-\\(\\)\\+\\s]+">`;
+    }
+    else if (q.type === 'date') {
+        inputHtml = `<input class="text-input" type="date" name="${q.id}" max="${new Date().toISOString().split('T')[0]}">`;
+    }
+    else if (q.type === 'number') {
+        inputHtml = `<input class="text-input" type="number" name="${q.id}" placeholder="Enter number" min="0">`;
     }
     else if (q.type === 'checkbox') {
         const allOptions = [...new Set([...(q.safe || []), ...(q.flag || []), ...(q.disqualify || [])])];
@@ -114,9 +127,11 @@ function renderQuestion(q) {
         inputHtml = '<div class="checkbox-group">';
         allOptions.forEach((opt, index) => {
             const cleanOpt = opt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const isDisqualifying = q.disqualify && q.disqualify.includes(opt);
+            const changeHandler = isDisqualifying ? `onchange="checkInstantDisqualification('${q.id}', '${opt}', '${q.disqualifyMessage || ''}')"` : '';
             inputHtml += `
                 <div class="checkbox-option">
-                    <input type="checkbox" id="q${q.id}_${index}" name="${q.id}" value="${opt}">
+                    <input type="checkbox" id="q${q.id}_${index}" name="${q.id}" value="${opt}" ${changeHandler}>
                     <label for="q${q.id}_${index}">${cleanOpt}</label>
                 </div>`;
         });
@@ -454,51 +469,47 @@ document.getElementById('form').addEventListener('submit', async function(e) {
     }
 
     try {
-        // Load telehealth logic from local JSON
+        // Load telehealth logic
         const telehealthResponse = await fetch(CONFIG.telehealthEndpoint);
         const telehealthData = await telehealthResponse.json();
         const screenerLogic = telehealthData[CONFIG.screener];
 
-        // Log the form data (instead of submitting to external webhook)
-        console.log('Form Data Collected:', {
-            form_type: `${CONFIG.screener}_Screening`,
-            timestamp: new Date().toISOString(),
-            responses: data
+        // Submit to n8n webhook
+        await fetch(CONFIG.submitEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                form_type: `${CONFIG.screener}_Screening`,
+                timestamp: new Date().toISOString(),
+                responses: data
+            })
         });
 
-        // Show success message
-        showSuccessScreen(screenerLogic);
+        // Trigger redirect
+        const redirectData = {
+            category: screenerLogic?.category || screenerCategory,
+            consult_type: screenerLogic?.consult || 'sync',
+            formType: CONFIG.screener
+        };
+
+        console.log('Triggering redirect with:', redirectData);
+
+        window.dispatchEvent(new CustomEvent('ghlRedirect', { detail: redirectData }));
+
+        // Also send to parent if in iframe
+        if (window.parent !== window) {
+            window.parent.postMessage({
+                type: 'ghlRedirect',
+                detail: redirectData
+            }, '*');
+        }
 
     } catch (error) {
-        console.error('Processing error:', error);
-
-        // Show success anyway with fallback data
-        showSuccessScreen({
-            category: screenerCategory || 'Healthcare',
-            consult: 'sync'
-        });
+        console.error('Submission error:', error);
+        alert('Error submitting form. Please try again.');
     }
 });
 
-// Show success screen
-function showSuccessScreen(screenerLogic) {
-    document.getElementById('form').style.display = 'none';
-
-    document.getElementById('loading').innerHTML = `
-        <div class="disqualification-container">
-            <div class="disqualification-title">✅ Assessment Complete!</div>
-            <div class="depression-message">Thank you for completing your ${CONFIG.screener} assessment.</div>
-            <div class="depression-message">Your responses have been recorded successfully.</div>
-            <div style="margin: 20px 0; padding: 15px; background: #f0f8ff; border-radius: 6px; border: 1px solid #b3d9ff;">
-                <strong>Assessment Type:</strong> ${screenerLogic?.category || screenerCategory}<br>
-                <strong>Consultation:</strong> ${screenerLogic?.consult || 'sync'}<br>
-                <strong>Screener:</strong> ${CONFIG.screener}
-            </div>
-            <button onclick="location.reload()" class="nav-button" style="margin-top: 20px;">Take Another Assessment</button>
-        </div>
-    `;
-    document.getElementById('loading').style.display = 'block';
-}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', loadQuestions);
