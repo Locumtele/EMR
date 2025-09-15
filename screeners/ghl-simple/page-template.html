@@ -1,0 +1,221 @@
+<!-- GHL Drag & Drop Template -->
+<!-- Build this structure using GHL elements -->
+
+<!-- Title Box (Use GHL Text Elements) -->
+<div class="title-box">
+    <div id="dynamic-title">Assessment</div>
+    <div class="subtitle">Complete your personalized assessment</div>
+</div>
+
+<!-- Loading (Use GHL Text Element) -->
+<div id="loading" style="text-align: center; padding: 40px;">
+    <div style="font-size: 18px; margin-bottom: 10px;">Loading your assessment...</div>
+    <div style="font-size: 14px; color: #666;">Please wait while we prepare your questions</div>
+</div>
+
+<!-- Form Container (Use GHL Form Element) -->
+<form id="form" style="display: none;">
+    <div id="questions"></div>
+    <div class="submit-container-center">
+        <button type="submit" class="nav-button">SUBMIT ASSESSMENT</button>
+    </div>
+</form>
+
+<!-- JavaScript (Add this in GHL Code/Script Element) -->
+<script>
+// Get screener type from URL parameter
+const SCREENER_TYPE = new URLSearchParams(window.location.search).get('screener') || 'glp1';
+
+// Configuration
+const CONFIG = {
+    screener: SCREENER_TYPE,
+    questionsEndpoint: `https://locumtele.github.io/EMR/screeners/data/${SCREENER_TYPE.toLowerCase()}.json`,
+    telehealthEndpoint: 'https://locumtele.github.io/EMR/screeners/data/telehealth-logic.json',
+    submitEndpoint: 'https://locumtele.app.n8n.cloud/webhook/patient-screener'
+};
+
+let currentQuestions = [];
+let screenerCategory = '';
+
+// Load and display questions
+async function loadQuestions() {
+    try {
+        const response = await fetch(CONFIG.questionsEndpoint);
+        const data = await response.json();
+
+        currentQuestions = data.questions;
+        screenerCategory = data.category;
+
+        document.getElementById('dynamic-title').textContent = `${CONFIG.screener.toUpperCase()} Assessment`;
+        document.querySelector('.subtitle').textContent = `Complete your personalized ${screenerCategory} assessment`;
+
+        buildForm(data.questions);
+    } catch (error) {
+        document.getElementById('loading').innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <h2>Unable to Load Assessment</h2>
+                <p>Please try refreshing the page</p>
+            </div>
+        `;
+    }
+}
+
+// Build form from questions
+function buildForm(questions) {
+    const sections = {};
+    questions.forEach(q => {
+        if (!sections[q.section]) sections[q.section] = [];
+        sections[q.section].push(q);
+    });
+
+    let html = '';
+    Object.entries(sections).forEach(([section, qs]) => {
+        html += `<div class="question-group">
+            <div class="question-title">${section}</div>
+            ${qs.map(q => renderQuestion(q)).join('')}
+        </div>`;
+    });
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('form').style.display = 'block';
+    document.getElementById('questions').innerHTML = html;
+
+    setupConditionalLogic();
+}
+
+// Render individual question
+function renderQuestion(q) {
+    let inputHtml = '';
+
+    switch(q.type) {
+        case 'text':
+        case 'email':
+        case 'phone':
+        case 'date':
+        case 'number':
+            inputHtml = `<input class="text-input" type="${q.type}" name="${q.id}" placeholder="Enter ${q.text.toLowerCase()}">`;
+            break;
+
+        case 'checkbox':
+            const allOptions = [...new Set([...(q.safe || []), ...(q.flag || []), ...(q.disqualify || [])])];
+            allOptions.sort((a, b) => {
+                const aIsNegative = a.toLowerCase().includes('no') || a.toLowerCase().includes('none');
+                const bIsNegative = b.toLowerCase().includes('no') || b.toLowerCase().includes('none');
+                if (aIsNegative && !bIsNegative) return 1;
+                if (!aIsNegative && bIsNegative) return -1;
+                return 0;
+            });
+
+            inputHtml = `<div class="checkbox-group">
+                ${allOptions.map((opt, index) => `
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="q${q.id}_${index}" name="${q.id}" value="${opt}">
+                        <label for="q${q.id}_${index}">${opt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label>
+                    </div>
+                `).join('')}
+            </div>`;
+            break;
+
+        case 'height_feet':
+            inputHtml = `
+                <div class="height-weight-grid-2">
+                    <div>
+                        <label class="input-label-small">Height (feet)</label>
+                        <input class="text-input" type="number" name="height_feet" placeholder="5" min="3" max="8">
+                    </div>
+                    <div>
+                        <label class="input-label-small">Height (inches)</label>
+                        <input class="text-input" type="number" name="height_inches" placeholder="6" min="0" max="11">
+                    </div>
+                </div>`;
+            break;
+
+        case 'weight_pounds':
+            inputHtml = `
+                <div>
+                    <label class="input-label-small">Weight (pounds)</label>
+                    <input class="text-input" type="number" name="weight_pounds" placeholder="180" min="50" max="800">
+                </div>
+                <div id="bmi-result" class="bmi-result"></div>`;
+            break;
+
+        case 'file':
+            inputHtml = `<input type="file" name="${q.id}" accept="image/*" class="file-input">`;
+            break;
+    }
+
+    let html = `<div class="question" data-question-id="${q.id}">
+        <label class="question-label">${q.text}</label>
+        ${inputHtml}
+    </div>`;
+
+    // Wrap conditional questions
+    if (q.showCondition && q.showCondition !== 'always') {
+        html = `<div class="conditional-question" data-show-if="${q.showCondition}" style="display: none;">${html}</div>`;
+    }
+
+    return html;
+}
+
+// Setup conditional logic
+function setupConditionalLogic() {
+    const conditionalQuestions = document.querySelectorAll('[data-show-if]');
+
+    conditionalQuestions.forEach(question => {
+        const condition = question.getAttribute('data-show-if');
+
+        if (condition.includes('if_gender_female')) {
+            const genderInputs = document.querySelectorAll('input[name="5"]');
+            genderInputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    if (input.checked && input.value === 'female') {
+                        question.style.display = 'block';
+                    } else if (input.checked && input.value !== 'female') {
+                        question.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+}
+
+// Form submission
+document.getElementById('form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    try {
+        // Load telehealth logic
+        const telehealthResponse = await fetch(CONFIG.telehealthEndpoint);
+        const telehealthData = await telehealthResponse.json();
+        const screenerLogic = telehealthData.screeners[CONFIG.screener];
+
+        // Submit to n8n
+        await fetch(CONFIG.submitEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                form_type: `${CONFIG.screener}_Screening`,
+                timestamp: new Date().toISOString(),
+                responses: Object.fromEntries(formData.entries())
+            })
+        });
+
+        // Trigger redirect
+        const redirectData = {
+            category: screenerLogic?.category || CONFIG.screener,
+            consult_type: screenerLogic?.consult || 'sync',
+            formType: CONFIG.screener
+        };
+
+        window.dispatchEvent(new CustomEvent('ghlRedirect', { detail: redirectData }));
+
+    } catch (error) {
+        alert('Error submitting form. Please try again.');
+    }
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', loadQuestions);
+</script>
