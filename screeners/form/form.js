@@ -1,10 +1,11 @@
 // Working Simple Form System
 const CONFIG = {
     screener: new URLSearchParams(window.location.search).get('screener') || 'GLP1',
-    questionsEndpoint: `https://locumtele.github.io/EMR/screeners/data/${CONFIG.screener.toLowerCase()}.json`,
     telehealthEndpoint: 'https://locumtele.app.n8n.cloud/webhook/telehealth-logic',
     submitEndpoint: 'https://locumtele.app.n8n.cloud/webhook/patient-screener'
 };
+
+CONFIG.questionsEndpoint = `https://locumtele.github.io/EMR/screeners/data/${CONFIG.screener.toLowerCase()}.json`;
 
 let currentQuestions = [];
 let screenerCategory = '';
