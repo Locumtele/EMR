@@ -2,7 +2,7 @@
   "screener": "GLP1",
   "category": "Weightloss",
   "lastUpdated": "2025-01-15T10:00:00.000Z",
-  "totalQuestions": 21,
+  "totalQuestions": 22,
   "questions": [
     {
       "id": 1,
@@ -148,8 +148,8 @@
       "text": "Are you taking any of the following medications?",
       "type": "checkbox",
       "safe": ["none"],
-      "flag": ["insulin_secretagogues"],
-      "disqualify": ["abiraterone", "somatrogon", "chloroquine", "insulin", "other_glp1s"],
+      "flag": ["insulin_secretagogues", "other_glp1s"],
+      "disqualify": ["abiraterone", "somatrogon", "chloroquine", "insulin"],
       "disqualifyMessage": "Your current medications may interact with GLP-1 therapy. Please work with your prescribing doctor to explore safe weight management options that won't interfere with your current treatment.",
       "showCondition": "always",
       "category": "Weightloss"
@@ -169,6 +169,18 @@
     {
       "id": 14,
       "section": "Assessment",
+      "text": "What other GLP-1 medications are you taking and at what dose?",
+      "type": "text",
+      "safe": ["any_text"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "if_other_glp1s_selected",
+      "category": "Weightloss"
+    },
+    {
+      "id": 15,
+      "section": "Assessment",
       "text": "Do you have family history of Multiple Endocrine Neoplasia Type 2 or Medullary Thyroid Carcinoma?",
       "type": "checkbox",
       "safe": ["no"],
@@ -179,7 +191,7 @@
       "category": "Weightloss"
     },
     {
-      "id": 15,
+      "id": 16,
       "section": "Medical History",
       "text": "Are you currently receiving chemotherapy?",
       "type": "checkbox",
@@ -191,7 +203,7 @@
       "category": "Weightloss"
     },
     {
-      "id": 16,
+      "id": 17,
       "section": "Medical History",
       "text": "Do you have any allergies to medications, foods, or other substances?",
       "type": "text",
@@ -203,7 +215,7 @@
       "category": "Weightloss"
     },
     {
-      "id": 17,
+      "id": 18,
       "section": "Medical History",
       "text": "How much alcohol do you typically consume?",
       "type": "checkbox",
@@ -215,7 +227,7 @@
       "category": "Weightloss"
     },
     {
-      "id": 18,
+      "id": 19,
       "section": "Medical History",
       "text": "Do you currently use tobacco or vape?",
       "type": "checkbox",
@@ -227,7 +239,7 @@
       "category": "Weightloss"
     },
     {
-      "id": 19,
+      "id": 20,
       "section": "Medical History",
       "text": "What type of tobacco/vaping products and how frequently?",
       "type": "text",
@@ -239,7 +251,7 @@
       "category": "Weightloss"
     },
     {
-      "id": 20,
+      "id": 21,
       "section": "Medical History",
       "text": "What is your exercise level?",
       "type": "checkbox",
@@ -251,7 +263,7 @@
       "category": "Weightloss"
     },
     {
-      "id": 21,
+      "id": 22,
       "section": "Medical History",
       "text": "Are you currently experiencing depression with history of suicidal attempts, thoughts, or ideation?",
       "type": "checkbox",

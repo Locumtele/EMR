@@ -208,6 +208,40 @@ function setupConditionalLogic() {
         });
         console.log('Gender -> pregnancy logic setup');
     }
+
+    // Handle other GLP-1s -> details question
+    const otherGlp1Inputs = document.querySelectorAll('input[name="12"]'); // Medications question ID 12
+    const otherGlp1DetailsQuestion = document.querySelector('[data-show-if="if_other_glp1s_selected"]');
+
+    if (otherGlp1Inputs.length > 0 && otherGlp1DetailsQuestion) {
+        otherGlp1Inputs.forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.checked && this.value === 'other_glp1s') {
+                    otherGlp1DetailsQuestion.style.display = 'block';
+                } else if (this.checked && this.value !== 'other_glp1s') {
+                    otherGlp1DetailsQuestion.style.display = 'none';
+                }
+            });
+        });
+        console.log('Other GLP-1s -> details logic setup');
+    }
+
+    // Handle tobacco -> details question
+    const tobaccoInputs = document.querySelectorAll('input[name="19"]'); // Tobacco question ID 19
+    const tobaccoDetailsQuestion = document.querySelector('[data-show-if="if_tobacco_yes"]');
+
+    if (tobaccoInputs.length > 0 && tobaccoDetailsQuestion) {
+        tobaccoInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.checked && this.value === 'yes') {
+                    tobaccoDetailsQuestion.style.display = 'block';
+                } else if (this.checked && this.value !== 'yes') {
+                    tobaccoDetailsQuestion.style.display = 'none';
+                }
+            });
+        });
+        console.log('Tobacco -> details logic setup');
+    }
 }
 
 // BMI Calculation
