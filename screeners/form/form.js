@@ -369,58 +369,82 @@ function getDisqualifyReason(data) {
     return '';
 }
 
-// Show immediate disqualification screen
+// Show immediate red bubble notification
 function earlyDisqualify(reason) {
-    console.log('Showing immediate disqualification:', reason);
+    console.log('Showing immediate red bubble:', reason);
     
-    // Hide all question groups
-    document.querySelectorAll('.question-group').forEach(group => {
-        group.style.display = 'none';
-    });
-    
-    // Hide submit button
-    const submitContainer = document.querySelector('.submit-container-center');
-    if (submitContainer) {
-        submitContainer.style.display = 'none';
+    // Remove any existing red bubble
+    const existingBubble = document.getElementById('red-bubble-notification');
+    if (existingBubble) {
+        existingBubble.remove();
     }
     
-    // Show disqualification message
-    const loadingDiv = document.getElementById('loading');
-    loadingDiv.style.display = 'block';
+    // Create red bubble notification
+    const redBubble = document.createElement('div');
+    redBubble.id = 'red-bubble-notification';
+    redBubble.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #dc3545;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        z-index: 1000;
+        max-width: 90%;
+        text-align: center;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 1.4;
+        animation: slideDown 0.3s ease-out;
+    `;
+    
+    // Add animation keyframes
+    if (!document.getElementById('bubble-animation')) {
+        const style = document.createElement('style');
+        style.id = 'bubble-animation';
+        style.textContent = `
+            @keyframes slideDown {
+                from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+                to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
     
     if (reason === 'DEPRESSION_SPECIAL_MESSAGE') {
-        loadingDiv.innerHTML = `
-            <div style="text-align: center; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <div style="font-size: 18px; margin-bottom: 10px; color: #dc3545;">❌ Not Eligible for Treatment</div>
-                <div style="text-align:left; max-width:720px; margin:0 auto; font-size: 14px; font-weight: normal; line-height:1.5;">
-                    <p><strong>We care about your safety.</strong></p>
-                    <p>Because you indicated that you are feeling depressed or having thoughts of suicide, you are not eligible to continue with this program/medication at this time.</p>
-                    <p>You are not alone, and help is available:</p>
-                    <ul style="margin-left: 18px;">
-                        <li>Call or text <strong>988</strong> to connect with the Suicide & Crisis Lifeline.</li>
-                        <li>If you are in immediate danger of harming yourself, call <strong>911</strong> or go to the nearest Emergency Department.</li>
-                    </ul>
-                    <p>Please reach out to a trusted family member, friend, or mental health professional today.</p>
-                    <p><strong>Your wellbeing is our top priority.</strong></p>
-                </div>
-                <div style="margin-top: 16px; text-align:center;">
-                    <button onclick="location.reload()" style="background:black;color:white;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;">Start Over</button>
-                </div>
+        redBubble.innerHTML = `
+            <div style="font-size: 16px; margin-bottom: 8px;">❌ Not Eligible for Treatment</div>
+            <div style="font-size: 12px; margin-bottom: 10px;">
+                <strong>We care about your safety.</strong><br>
+                Because you indicated depression or suicidal thoughts, you are not eligible for this program.
             </div>
+            <div style="font-size: 11px; margin-bottom: 10px;">
+                <strong>Help is available:</strong><br>
+                Call or text <strong>988</strong> for the Suicide & Crisis Lifeline<br>
+                Call <strong>911</strong> if in immediate danger
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Dismiss</button>
         `;
     } else {
-        loadingDiv.innerHTML = `
-            <div style="text-align: center; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <div style="font-size: 18px; margin-bottom: 10px; color: #dc3545;">❌ Not Eligible for Treatment</div>
-                <div style="text-align:left; max-width:720px; margin:0 auto; font-size: 14px; font-weight: normal; line-height:1.5;">
-                    <p>${reason}</p>
-                </div>
-                <div style="margin-top: 16px; text-align:center;">
-                    <button onclick="location.reload()" style="background:black;color:white;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;">Start Over</button>
-                </div>
-            </div>
+        redBubble.innerHTML = `
+            <div style="font-size: 16px; margin-bottom: 8px;">❌ Not Eligible for Treatment</div>
+            <div style="font-size: 12px; margin-bottom: 10px;">${reason}</div>
+            <button onclick="this.parentElement.parentElement.remove()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Dismiss</button>
         `;
     }
+    
+    // Add to page
+    document.body.appendChild(redBubble);
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (redBubble.parentElement) {
+            redBubble.remove();
+        }
+    }, 10000);
 }
 
 // BMI Calculation
