@@ -2,7 +2,7 @@
   "screener": "GLP1",
   "category": "Weightloss",
   "lastUpdated": "2025-01-15T10:00:00.000Z",
-  "totalQuestions": 22,
+  "totalQuestions": 24,
   "questions": [
     {
       "id": 1,
@@ -271,6 +271,30 @@
       "flag": [],
       "disqualify": ["yes"],
       "disqualifyMessage": "DEPRESSION_SPECIAL_MESSAGE",
+      "showCondition": "always",
+      "category": "Weightloss"
+    },
+    {
+      "id": 23,
+      "section": "Verification",
+      "text": "Driver's License or Government ID",
+      "type": "file",
+      "safe": ["any_file"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
+      "showCondition": "always",
+      "category": "Weightloss"
+    },
+    {
+      "id": 24,
+      "section": "Verification",
+      "text": "Full Body Photo (front view)",
+      "type": "file",
+      "safe": ["any_file"],
+      "flag": [],
+      "disqualify": [],
+      "disqualifyMessage": "",
       "showCondition": "always",
       "category": "Weightloss"
     }
