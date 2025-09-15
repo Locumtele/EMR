@@ -233,6 +233,194 @@ function setupConditionalLogic() {
         });
         console.log('Tobacco -> details logic setup');
     }
+    
+    // Setup immediate disqualification monitoring
+    setupEarlyDisqualifyMonitoring();
+}
+
+// Setup immediate disqualification monitoring
+function setupEarlyDisqualifyMonitoring() {
+    console.log('Setting up immediate disqualification monitoring');
+    
+    // Get all disqualifying inputs
+    const disqualifierSelectors = [
+        'input[name="4"]', // Date of birth
+        'input[name="7"]', // Pregnancy
+        'input[name="10"]', // GLP-1 allergies
+        'input[name="11"]', // Medical conditions
+        'input[name="12"]', // Current medications
+        'input[name="13"]', // HbA1C
+        'input[name="15"]', // Family history
+        'input[name="16"]', // Chemotherapy
+        'input[name="18"]', // Alcohol
+        'input[name="22"]'  // Depression
+    ].join(',');
+
+    const handler = function() {
+        console.log('Disqualification input changed:', this.name, this.value);
+        const formData = new FormData(document.getElementById('form'));
+        const data = {};
+        
+        // Collect all form data properly
+        for (let [key, value] of formData.entries()) {
+            if (data[key]) {
+                if (Array.isArray(data[key])) {
+                    data[key].push(value);
+                } else {
+                    data[key] = [data[key], value];
+                }
+            } else {
+                data[key] = value;
+            }
+        }
+        
+        // Also collect all checkbox values using getAll
+        for (let [key, value] of formData.entries()) {
+            if (formData.getAll(key).length > 1) {
+                data[key] = formData.getAll(key);
+            }
+        }
+        
+        const reason = getDisqualifyReason(data);
+        if (reason) {
+            console.log('Immediate disqualification triggered:', reason);
+            earlyDisqualify(reason);
+        }
+    };
+
+    document.querySelectorAll(disqualifierSelectors).forEach(input => {
+        input.addEventListener('change', handler);
+    });
+    
+    console.log('Immediate disqualification monitoring setup complete');
+}
+
+// Get disqualification reason from current form data
+function getDisqualifyReason(data) {
+    // Age validation - must be 18 or older
+    const dateOfBirth = data['4'];
+    if (dateOfBirth) {
+        const today = new Date();
+        const birthDate = new Date(dateOfBirth);
+        const age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
+        
+        if (actualAge < 18) {
+            return 'You must be 18 years or older to use this service.';
+        }
+    }
+    
+    // Pregnancy check
+    if (data['7'] && data['7'].includes('yes')) {
+        return 'For the safety of you and your baby, GLP-1 medications are not recommended during pregnancy, while trying to conceive, or while breastfeeding.';
+    }
+    
+    // GLP-1 allergies
+    if (data['10'] && data['10'].length > 0 && !data['10'].includes('none')) {
+        return 'For your safety, we cannot prescribe GLP-1 medications if you have had an allergic reaction to this type of medication before.';
+    }
+    
+    // Medical conditions
+    if (data['11']) {
+        const responses = Array.isArray(data['11']) ? data['11'] : [data['11']];
+        const disqualifyingConditions = ['diabetes_type1', 'pancreatitis', 'medullary_thyroid', 'men2', 'liver_disease', 'leber_neuropathy'];
+        const hasDisqualifyingCondition = responses.some(condition => disqualifyingConditions.includes(condition));
+        if (hasDisqualifyingCondition) {
+            return 'Based on your medical history, GLP-1 medications may not be safe for you. We recommend discussing weight management options with your healthcare provider.';
+        }
+    }
+    
+    // Current medications
+    if (data['12']) {
+        const responses = Array.isArray(data['12']) ? data['12'] : [data['12']];
+        const disqualifyingMeds = ['abiraterone', 'somatrogon', 'chloroquine', 'insulin'];
+        const hasDisqualifyingMed = responses.some(med => disqualifyingMeds.includes(med));
+        if (hasDisqualifyingMed) {
+            return 'Your current medications may interact with GLP-1 therapy. Please work with your prescribing doctor to explore safe weight management options that won\'t interfere with your current treatment.';
+        }
+    }
+    
+    // HbA1C
+    if (data['13'] && data['13'].includes('yes')) {
+        return 'Your current HbA1C level requires specialized diabetes care. We recommend working with an endocrinologist or your primary care doctor for the best treatment approach.';
+    }
+    
+    // Family history
+    if (data['15'] && data['15'].includes('yes')) {
+        return 'Due to your family history of thyroid conditions, GLP-1 medications carry additional risks for you. Please consult with an endocrinologist about safer alternatives.';
+    }
+    
+    // Chemotherapy
+    if (data['16'] && data['16'].includes('yes')) {
+        return 'While receiving cancer treatment, it\'s important to focus on your current therapy. Please discuss weight management goals with your oncology team when appropriate.';
+    }
+    
+    // Alcohol
+    if (data['18'] && data['18'].includes('2+_daily')) {
+        return 'Regular heavy alcohol consumption can interact dangerously with GLP-1 medications. We recommend discussing safer weight management options with your healthcare provider.';
+    }
+    
+    // Depression
+    if (data['22'] && data['22'].includes('yes')) {
+        return 'DEPRESSION_SPECIAL_MESSAGE';
+    }
+    
+    return '';
+}
+
+// Show immediate disqualification screen
+function earlyDisqualify(reason) {
+    console.log('Showing immediate disqualification:', reason);
+    
+    // Hide all question groups
+    document.querySelectorAll('.question-group').forEach(group => {
+        group.style.display = 'none';
+    });
+    
+    // Hide submit button
+    const submitContainer = document.querySelector('.submit-container-center');
+    if (submitContainer) {
+        submitContainer.style.display = 'none';
+    }
+    
+    // Show disqualification message
+    const loadingDiv = document.getElementById('loading');
+    loadingDiv.style.display = 'block';
+    
+    if (reason === 'DEPRESSION_SPECIAL_MESSAGE') {
+        loadingDiv.innerHTML = `
+            <div style="text-align: center; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="font-size: 18px; margin-bottom: 10px; color: #dc3545;">❌ Not Eligible for Treatment</div>
+                <div style="text-align:left; max-width:720px; margin:0 auto; font-size: 14px; font-weight: normal; line-height:1.5;">
+                    <p><strong>We care about your safety.</strong></p>
+                    <p>Because you indicated that you are feeling depressed or having thoughts of suicide, you are not eligible to continue with this program/medication at this time.</p>
+                    <p>You are not alone, and help is available:</p>
+                    <ul style="margin-left: 18px;">
+                        <li>Call or text <strong>988</strong> to connect with the Suicide & Crisis Lifeline.</li>
+                        <li>If you are in immediate danger of harming yourself, call <strong>911</strong> or go to the nearest Emergency Department.</li>
+                    </ul>
+                    <p>Please reach out to a trusted family member, friend, or mental health professional today.</p>
+                    <p><strong>Your wellbeing is our top priority.</strong></p>
+                </div>
+                <div style="margin-top: 16px; text-align:center;">
+                    <button onclick="location.reload()" style="background:black;color:white;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;">Start Over</button>
+                </div>
+            </div>
+        `;
+    } else {
+        loadingDiv.innerHTML = `
+            <div style="text-align: center; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="font-size: 18px; margin-bottom: 10px; color: #dc3545;">❌ Not Eligible for Treatment</div>
+                <div style="text-align:left; max-width:720px; margin:0 auto; font-size: 14px; font-weight: normal; line-height:1.5;">
+                    <p>${reason}</p>
+                </div>
+                <div style="margin-top: 16px; text-align:center;">
+                    <button onclick="location.reload()" style="background:black;color:white;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;">Start Over</button>
+                </div>
+            </div>
+        `;
+    }
 }
 
 // BMI Calculation
