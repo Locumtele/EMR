@@ -314,8 +314,12 @@ function validateForm() {
     }
 
     // Check disqualifying conditions
+    console.log('Checking disqualification with data:', data);
+    console.log('Current questions:', currentQuestions);
     const disqualification = checkDisqualifyingConditions(data, currentQuestions);
+    console.log('Disqualification result:', disqualification);
     if (disqualification.disqualified) {
+        console.log('Showing disqualification screen with message:', disqualification.message);
         showDisqualificationScreen(disqualification.message);
         return false;
     }
@@ -348,13 +352,25 @@ function isValidAge(dob) {
 
 // Check disqualifying conditions
 function checkDisqualifyingConditions(data, questions) {
+    console.log('checkDisqualifyingConditions called with:', { data, questions: questions.length });
+    
     for (let question of questions) {
+        console.log(`Checking question ${question.id}:`, {
+            text: question.text,
+            disqualify: question.disqualify,
+            userResponse: data[question.id]
+        });
+        
         if (question.disqualify && question.disqualify.length > 0) {
             const userResponse = data[question.id];
             if (userResponse) {
                 const responses = Array.isArray(userResponse) ? userResponse : [userResponse];
+                console.log(`Question ${question.id} responses:`, responses);
+                
                 for (let response of responses) {
+                    console.log(`Checking response "${response}" against disqualify array:`, question.disqualify);
                     if (question.disqualify.includes(response)) {
+                        console.log(`DISQUALIFIED! Response "${response}" found in disqualify array`);
                         let message = question.disqualifyMessage || 'You do not meet the requirements for this program.';
 
                         // Handle special depression message
@@ -381,6 +397,7 @@ Your wellbeing is our top priority.`;
             }
         }
     }
+    console.log('No disqualifying conditions found');
     return { disqualified: false };
 }
 
