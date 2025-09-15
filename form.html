@@ -28,6 +28,7 @@
         };
         
         let currentQuestions = [];
+        let screenerCategory = '';
         let isDisqualified = false;
         let disqualificationReasons = [];
 
@@ -35,15 +36,7 @@
         document.title = `${CONFIG.screener} Assessment`;
         document.getElementById('dynamic-title').textContent = `${CONFIG.screener} Assessment`;
         
-        // Update subtitle based on screener type
-        const categoryMap = {
-            'GLP1': 'weight loss',
-            'NAD': 'anti-aging',
-            'Sermorelin': 'hormone optimization',
-            'Testosterone': 'hormone optimization'
-        };
-        const category = categoryMap[CONFIG.screener] || 'health';
-        document.querySelector('.subtitle').textContent = `Complete your personalized ${category} assessment`;
+        // Subtitle will be updated after loading data from webhook
 
         async function loadQuestions() {
             try {
@@ -60,11 +53,20 @@
                 const data = await response.json();
                 console.log('Raw n8n response:', data);
 
-                const questions = data[0] ? JSON.parse(data[0].content).questions : null;
-                console.log('Parsed questions:', questions);
+                const responseData = data[0] ? JSON.parse(data[0].content) : null;
+                const questions = responseData?.questions;
+                const category = responseData?.category;
+
+                console.log('Parsed data:', { questions, category });
 
                 if (!questions || questions.length === 0) {
                     throw new Error('No questions found in response');
+                }
+
+                // Update subtitle with category from Notion
+                if (category) {
+                    screenerCategory = category;
+                    document.querySelector('.subtitle').textContent = `Complete your personalized ${category} assessment`;
                 }
 
                 currentQuestions = questions;
@@ -1029,7 +1031,7 @@
                     body: JSON.stringify({ form_type: CONFIG.screener, responses: data })
                 });
                 
-                const event = new CustomEvent('ghlRedirect', { detail: { category: 'weightloss', formType: CONFIG.screener.toLowerCase() } });
+                const event = new CustomEvent('ghlRedirect', { detail: { category: screenerCategory || CONFIG.screener.toLowerCase(), formType: CONFIG.screener.toLowerCase() } });
                 window.dispatchEvent(event);
             } catch (error) {
                 alert('Error submitting form. Please try again.');
