@@ -2,8 +2,8 @@
 <html>
 <head>
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; }
-        iframe { width: 100%; border: none; overflow: hidden; }
+        body { margin: 0; padding: 0; }
+        iframe { width: 100%; border: none; display: block; }
     </style>
 </head>
 <body>
@@ -43,9 +43,19 @@
 
         // Listen for messages from iframe
         window.addEventListener('message', function(event) {
+            if (event.origin !== 'https://locumtele.github.io') return;
+
             if (event.data && event.data.type === 'resize') {
+                // Make iframe exactly the right height for its content
                 iframe.style.height = event.data.height + 'px';
-                document.body.style.height = event.data.height + 'px';
+
+                // Tell the parent GHL page to resize this iframe too
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'resize',
+                        height: event.data.height
+                    }, '*');
+                }
             }
 
             // Forward GHL redirect events
