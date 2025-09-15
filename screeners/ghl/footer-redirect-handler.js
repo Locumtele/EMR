@@ -1,17 +1,16 @@
-<!-- GHL Footer Redirect Code for Medical Screening Forms -->
-<!-- Add this to your GHL site footer in Website Settings > Footer Code -->
-<!-- Supports category-based redirects: weightloss, antiaging, sexual health, hormone, hair and skin -->
+// GHL Footer Redirect Code for Medical Screening Forms
+// Add this to your GHL site footer in Website Settings > Footer Code
+// Supports category-based redirects: weightloss, antiaging, sexual health, hormone, hair and skin
 
-<script>
-    // GHL Medical Form Redirect Handler
-    (function() {
-        'use strict';
+// GHL Medical Form Redirect Handler
+(function() {
+    'use strict';
 
-        // Capture location values from GHL merge fields
-        const locationId   = "{{location.id}}";
-        const locationName = "{{location.name}}";
-        const integration = "{{custom_values.private}}";
-        const rootdomain = "{{ custom_values.root_domain }}";
+    // Capture location values from GHL merge fields
+    const locationId   = "{{location.id}}";
+    const locationName = "{{location.name}}";
+    const integration = "{{custom_values.private}}";
+    const rootdomain = "{{ custom_values.root_domain }}";
 
 
         // Define redirect URLs by category and consult type
@@ -117,5 +116,4 @@
             }
         });
 
-    })();
-</script>
+})();
