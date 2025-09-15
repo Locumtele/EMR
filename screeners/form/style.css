@@ -136,7 +136,7 @@ html, body {
 }
 
 .option-item input[type="checkbox"],
-.option-item input[type="radio"] {
+.option-item input[type="checkbox"] {
     width: 20px;
     height: 20px;
     margin-top: 2px;
@@ -175,7 +175,7 @@ html, body {
 }
 
 .checkbox-option input[type="checkbox"],
-.checkbox-option input[type="radio"] {
+.checkbox-option input[type="checkbox"] {
     width: 20px;
     height: 20px;
     margin-top: 2px;
@@ -183,7 +183,6 @@ html, body {
 }
 
 /* Ensure all radio buttons and checkboxes are properly sized */
-input[type="radio"],
 input[type="checkbox"] {
     width: 20px !important;
     height: 20px !important;

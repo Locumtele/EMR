@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #screener-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <iframe
+        id="screener-iframe"
+        src="https://locumtele.github.io/EMR/screeners/form/form.html?screener=glp1"
+        frameborder="0"
+        scrolling="no">
+    </iframe>
+
+    <script>
+        // Get screener from URL parameter and pass it to iframe
+        const urlParams = new URLSearchParams(window.location.search);
+        const screener = urlParams.get('screener') || 'glp1';
+
+        const iframe = document.getElementById('screener-iframe');
+        iframe.src = `https://locumtele.github.io/EMR/screeners/form/form.html?screener=${screener}`;
+
+        // Listen for redirect events from the iframe
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'ghlRedirect') {
+                // Trigger the redirect on the parent page
+                const redirectEvent = new CustomEvent('ghlRedirect', {
+                    detail: event.data.detail
+                });
+                window.dispatchEvent(redirectEvent);
+            }
+        });
+    </script>
+</body>
+</html>
