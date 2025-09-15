@@ -375,6 +375,11 @@ function setupValidationListeners() {
             input.addEventListener('input', calculateBMI);
         }
 
+        // Special handler for age validation
+        if (validationType === 'date') {
+            input.addEventListener('change', () => checkAgeDisqualification(input));
+        }
+
         // Add real-time disqualification checking
         if (['radio', 'checkbox'].includes(validationType)) {
             input.addEventListener('change', () => checkDisqualificationRealTime(input));
@@ -666,6 +671,59 @@ function calculateAge(birthDate) {
         age--;
     }
     return age;
+}
+
+function checkAgeDisqualification(input) {
+    if (!input.value) return;
+
+    const questionElement = input.closest('[data-question-id]');
+    if (!questionElement) return;
+
+    const questionId = questionElement.getAttribute('data-question-id');
+    const question = currentQuestions.find(q => q.id.toString() === questionId);
+
+    if (!question || !question.disqualify || !question.disqualifyMessage) return;
+
+    // Calculate age from date input
+    const age = calculateAge(input.value);
+
+    // Check if age triggers disqualification
+    const isUnder18 = age < 18;
+    const hasUnder18Disqualifier = question.disqualify.includes('under_18');
+
+    // Remove any existing age warning
+    const existingWarning = questionElement.querySelector('.disqualification-warning');
+    if (existingWarning) {
+        existingWarning.remove();
+    }
+
+    // Remove from disqualification reasons
+    disqualificationReasons = disqualificationReasons.filter(reason => reason.questionId !== questionId);
+
+    if (isUnder18 && hasUnder18Disqualifier) {
+        // Add to disqualification reasons
+        disqualificationReasons.push({
+            questionId: questionId,
+            message: question.disqualifyMessage,
+            selectedValue: `Age: ${age}`
+        });
+
+        const warningDiv = document.createElement('div');
+        warningDiv.className = 'disqualification-warning';
+        warningDiv.innerHTML = createDisqualificationMessage({
+            message: question.disqualifyMessage,
+            type: "disqualify",
+            showRecommendation: true,
+            showButton: false,
+            showBackButton: true
+        });
+
+        // Insert after the question
+        questionElement.appendChild(warningDiv);
+    }
+
+    // Update submit button state
+    updateSubmitButtonState();
 }
 
 function calculateBMI() {
