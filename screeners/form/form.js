@@ -538,8 +538,6 @@ function validateForm() {
     const errors = [];
     const formData = collectFormData();
 
-    console.log('Form data collected:', formData);
-
     // Universal validation using question data from Notion
     currentQuestions.forEach(question => {
         const fieldValue = formData[question.id.toString()];
@@ -1014,10 +1012,12 @@ function showDisqualificationScreen(message) {
 }
 
 document.getElementById('form').addEventListener('submit', async function(e) {
+    console.log('Form submit event triggered!');
     e.preventDefault();
 
     // Validate form
     const errors = validateForm();
+    console.log('Validation errors:', errors);
     if (errors.length > 0) {
         // Check if it's a disqualification error
         const disqualificationError = errors.find(error =>
