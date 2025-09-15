@@ -1,10 +1,11 @@
-// Working Simple Form System
+// Working Simple Form System - JSON Only Version
 const CONFIG = {
-    screener: new URLSearchParams(window.location.search).get('screener') || 'GLP1',
-    questionsEndpoint: 'https://locumtele.app.n8n.cloud/webhook/notion-questions',
-    telehealthEndpoint: 'https://locumtele.app.n8n.cloud/webhook/telehealth-logic',
-    submitEndpoint: 'https://locumtele.app.n8n.cloud/webhook/patient-screener'
+    screener: new URLSearchParams(window.location.search).get('screener') || 'GLP1'
 };
+
+CONFIG.questionsEndpoint = `https://locumtele.github.io/EMR/screeners/data/${CONFIG.screener.toLowerCase()}.json`;
+CONFIG.telehealthEndpoint = `https://locumtele.github.io/EMR/screeners/data/telehealth-logic.json`;
+CONFIG.submitEndpoint = 'https://locumtele.app.n8n.cloud/webhook/patient-screener';
 
 let currentQuestions = [];
 let screenerCategory = '';
@@ -14,7 +15,7 @@ async function loadQuestions() {
     console.log('Loading questions from:', CONFIG.questionsEndpoint);
 
     try {
-        const response = await fetch(`${CONFIG.questionsEndpoint}?screener=${CONFIG.screener}`);
+        const response = await fetch(CONFIG.questionsEndpoint);
         console.log('Response status:', response.status, response.statusText);
 
         if (!response.ok) {
@@ -24,19 +25,9 @@ async function loadQuestions() {
         const data = await response.json();
         console.log('Data loaded:', data);
 
-        // Handle Notion webhook response format
-        let questions, category;
-        if (Array.isArray(data) && data.length > 0) {
-            // Parse the content field which contains the JSON string
-            const content = JSON.parse(data[0].content);
-            questions = content.questions;
-            category = content.category;
-        } else if (data.questions) {
-            questions = data.questions;
-            category = data.category;
-        } else {
-            throw new Error('No questions found in response');
-        }
+        // Handle direct JSON format
+        const questions = data.questions;
+        const category = data.category;
 
         if (!questions || questions.length === 0) {
             throw new Error('No questions found in response');
@@ -208,6 +199,40 @@ function setupConditionalLogic() {
         });
         console.log('Gender -> pregnancy logic setup');
     }
+
+    // Handle other GLP-1s -> details question
+    const otherGlp1Inputs = document.querySelectorAll('input[name="12"]'); // Medications question ID 12
+    const otherGlp1DetailsQuestion = document.querySelector('[data-show-if="if_other_glp1s_selected"]');
+
+    if (otherGlp1Inputs.length > 0 && otherGlp1DetailsQuestion) {
+        otherGlp1Inputs.forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.checked && this.value === 'other_glp1s') {
+                    otherGlp1DetailsQuestion.style.display = 'block';
+                } else if (this.checked && this.value !== 'other_glp1s') {
+                    otherGlp1DetailsQuestion.style.display = 'none';
+                }
+            });
+        });
+        console.log('Other GLP-1s -> details logic setup');
+    }
+
+    // Handle tobacco -> details question
+    const tobaccoInputs = document.querySelectorAll('input[name="19"]'); // Tobacco question ID 19
+    const tobaccoDetailsQuestion = document.querySelector('[data-show-if="if_tobacco_yes"]');
+
+    if (tobaccoInputs.length > 0 && tobaccoDetailsQuestion) {
+        tobaccoInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.checked && this.value === 'yes') {
+                    tobaccoDetailsQuestion.style.display = 'block';
+                } else if (this.checked && this.value !== 'yes') {
+                    tobaccoDetailsQuestion.style.display = 'none';
+                }
+            });
+        });
+        console.log('Tobacco -> details logic setup');
+    }
 }
 
 // BMI Calculation
@@ -289,8 +314,12 @@ function validateForm() {
     }
 
     // Check disqualifying conditions
+    console.log('Checking disqualification with data:', data);
+    console.log('Current questions:', currentQuestions);
     const disqualification = checkDisqualifyingConditions(data, currentQuestions);
+    console.log('Disqualification result:', disqualification);
     if (disqualification.disqualified) {
+        console.log('Showing disqualification screen with message:', disqualification.message);
         showDisqualificationScreen(disqualification.message);
         return false;
     }
@@ -382,11 +411,11 @@ document.getElementById('form').addEventListener('submit', async function(e) {
 
     try {
         // Load telehealth logic
-        const telehealthResponse = await fetch(`${CONFIG.telehealthEndpoint}?screener=${CONFIG.screener}`);
+        const telehealthResponse = await fetch(CONFIG.telehealthEndpoint);
         const telehealthData = await telehealthResponse.json();
-        const screenerLogic = telehealthData;
+        const screenerLogic = telehealthData[CONFIG.screener];
 
-        // Submit to n8n
+        // Submit to n8n webhook
         await fetch(CONFIG.submitEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -421,6 +450,7 @@ document.getElementById('form').addEventListener('submit', async function(e) {
         alert('Error submitting form. Please try again.');
     }
 });
+
 
 // Initialize
 document.addEventListener('DOMContentLoaded', loadQuestions);
