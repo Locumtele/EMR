@@ -1,7 +1,7 @@
 // Working Simple Form System
 const CONFIG = {
     screener: new URLSearchParams(window.location.search).get('screener') || 'GLP1',
-    questionsEndpoint: 'https://locumtele.app.n8n.cloud/webhook/notion-questions',
+    questionsEndpoint: `https://locumtele.github.io/EMR/screeners/data/${CONFIG.screener.toLowerCase()}.json`,
     telehealthEndpoint: 'https://locumtele.app.n8n.cloud/webhook/telehealth-logic',
     submitEndpoint: 'https://locumtele.app.n8n.cloud/webhook/patient-screener'
 };
@@ -14,7 +14,7 @@ async function loadQuestions() {
     console.log('Loading questions from:', CONFIG.questionsEndpoint);
 
     try {
-        const response = await fetch(`${CONFIG.questionsEndpoint}?screener=${CONFIG.screener}`);
+        const response = await fetch(CONFIG.questionsEndpoint);
         console.log('Response status:', response.status, response.statusText);
 
         if (!response.ok) {
@@ -24,19 +24,9 @@ async function loadQuestions() {
         const data = await response.json();
         console.log('Data loaded:', data);
 
-        // Handle Notion webhook response format
-        let questions, category;
-        if (Array.isArray(data) && data.length > 0) {
-            // Parse the content field which contains the JSON string
-            const content = JSON.parse(data[0].content);
-            questions = content.questions;
-            category = content.category;
-        } else if (data.questions) {
-            questions = data.questions;
-            category = data.category;
-        } else {
-            throw new Error('No questions found in response');
-        }
+        // Handle direct JSON format
+        const questions = data.questions;
+        const category = data.category;
 
         if (!questions || questions.length === 0) {
             throw new Error('No questions found in response');
