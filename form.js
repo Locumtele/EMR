@@ -896,11 +896,65 @@ document.getElementById('form').addEventListener('submit', async function(e) {
             body: JSON.stringify({ form_type: CONFIG.screener, responses: data })
         });
 
-        const event = new CustomEvent('ghlRedirect', { detail: { category: screenerCategory || CONFIG.screener.toLowerCase(), formType: CONFIG.screener.toLowerCase() } });
+        const redirectData = { category: screenerCategory || CONFIG.screener.toLowerCase(), formType: CONFIG.screener.toLowerCase() };
+
+        // Dispatch event on current window (for direct hosting)
+        const event = new CustomEvent('ghlRedirect', { detail: redirectData });
         window.dispatchEvent(event);
+
+        // Send message to parent window (for iframe embedding)
+        if (window.parent !== window) {
+            window.parent.postMessage({
+                type: 'ghlRedirect',
+                detail: redirectData
+            }, '*');
+        }
     } catch (error) {
         alert('Error submitting form. Please try again.');
     }
 });
+
+// Auto-resize iframe functionality
+function sendHeightToParent() {
+    if (window.parent !== window) {
+        const height = Math.max(
+            document.body.scrollHeight,
+            document.body.offsetHeight,
+            document.documentElement.clientHeight,
+            document.documentElement.scrollHeight,
+            document.documentElement.offsetHeight
+        );
+
+        window.parent.postMessage({
+            type: 'resize',
+            height: height
+        }, '*');
+    }
+}
+
+// Send height updates when content changes
+const resizeObserver = new ResizeObserver(() => {
+    sendHeightToParent();
+});
+
+// Observe the main content areas
+document.addEventListener('DOMContentLoaded', function() {
+    resizeObserver.observe(document.body);
+    sendHeightToParent();
+});
+
+// Send height update when form is built
+const originalBuildForm = buildForm;
+buildForm = function(questions) {
+    originalBuildForm(questions);
+    setTimeout(sendHeightToParent, 100); // Small delay to ensure DOM is updated
+};
+
+// Send height update when disqualification screen is shown
+const originalShowDisqualificationScreen = showDisqualificationScreen;
+showDisqualificationScreen = function(message) {
+    originalShowDisqualificationScreen(message);
+    setTimeout(sendHeightToParent, 100);
+};
 
 loadQuestions();

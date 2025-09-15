@@ -38,7 +38,7 @@
         // Make function globally available for direct calls
         window.redirectToConsult = redirectToConsult;
 
-        // Listen for custom events from forms
+        // Listen for custom events from forms (direct hosting)
         window.addEventListener('ghlRedirect', function(event) {
             const category = event.detail?.category || event.detail?.formType;
             if (category) {
@@ -46,6 +46,23 @@
                 setTimeout(function() {
                     redirectToConsult(category);
                 }, 500);
+            }
+        });
+
+        // Listen for iframe messages (when using embed.html)
+        window.addEventListener('message', function(event) {
+            // Accept messages from GitHub Pages
+            if (event.origin !== 'https://locumtele.github.io') {
+                return;
+            }
+
+            if (event.data && event.data.type === 'ghlRedirect') {
+                const category = event.data.detail?.category || event.data.detail?.formType;
+                if (category) {
+                    setTimeout(function() {
+                        redirectToConsult(category);
+                    }, 500);
+                }
             }
         });
 
