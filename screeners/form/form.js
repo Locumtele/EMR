@@ -173,9 +173,22 @@ function formatText(text) {
 
 // Main Functions
 async function loadQuestions() {
+    console.log('Loading questions from:', CONFIG.questionsEndpoint);
+
     try {
         const response = await fetch(CONFIG.questionsEndpoint);
+        console.log('Response status:', response.status, response.statusText);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
+        console.log('Data loaded:', data);
+
+        if (!data.questions || data.questions.length === 0) {
+            throw new Error('No questions found in response');
+        }
 
         currentQuestions = data.questions;
         screenerCategory = data.category;
