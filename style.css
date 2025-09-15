@@ -313,7 +313,7 @@ input[type="checkbox"] {
     color: #666;
 }
 
-/* Mobile-specific improvements */
+/* Mobile-first responsive design */
 @media (max-width: 768px) {
     body {
         overflow-y: auto;
@@ -322,90 +322,122 @@ input[type="checkbox"] {
     body.questions-loaded {
         background: transparent !important;
     }
-    
+
     .form-container,
     .form-content {
         margin: 0;
         padding: 0;
     }
-    
+
     .question-group {
-        margin: 0 0 15px 0;
-        padding: 15px;
+        margin: 0 0 1rem 0;
+        padding: 1rem;
         border-radius: 8px;
     }
-    
+
     .question-title {
-        font-size: 18px;
-        margin-bottom: 15px;
-    }
-    
-    .question {
-        margin-bottom: 20px;
-        padding: 15px;
-    }
-    
-    .question-label {
-        font-size: 15px;
-        margin-bottom: 12px;
-        line-height: 1.3;
-    }
-    
-    /* Force single column layouts on mobile */
-    .checkbox-group { 
-        grid-template-columns: 1fr !important;
-        gap: 10px;
-    }
-    
-    .sub-questions.two-col,
-    .sub-questions.three-col {
-        grid-template-columns: 1fr !important;
-        gap: 15px;
-    }
-    
-    .checkbox-option {
-        padding: 12px;
-    }
-    
-    .text-input {
-        height: 45px;
-        padding: 12px;
-        font-size: 16px; /* Prevents zoom on iOS */
+        font-size: clamp(16px, 4vw, 18px);
+        margin-bottom: 1rem;
     }
 
-    
+    .question {
+        margin-bottom: 1.25rem;
+        padding: 1rem;
+    }
+
+    .question-label {
+        font-size: clamp(14px, 3.5vw, 15px);
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+    }
+
+    /* Single column layouts on mobile with better grid structure */
+    .checkbox-group,
+    .option-group {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .sub-questions.two-col,
+    .sub-questions.three-col {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* Mobile height/weight grids */
+    .height-weight-grid-3,
+    .height-weight-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .checkbox-option,
+    .option-item {
+        padding: 0.75rem;
+        min-height: 44px; /* Apple's minimum touch target */
+    }
+
+    /* Enhanced input styling for mobile */
+    .text-input {
+        height: 44px; /* Standard mobile touch target */
+        padding: 0.75rem;
+        font-size: 16px; /* Prevents zoom on iOS */
+        border-radius: 8px;
+    }
+
     .textarea-input {
         min-height: 80px;
-        padding: 12px;
+        padding: 0.75rem;
         font-size: 16px; /* Prevents zoom on iOS */
+        border-radius: 8px;
     }
-    
+
     .nav-button {
         width: 100%;
-        padding: 15px;
+        padding: 1rem;
         font-size: 16px;
-        min-height: 50px;
+        min-height: 44px;
+        border-radius: 8px;
     }
-    
-    .submit-container {
-        margin: 0 0 30px 0;
-        padding: 0 15px;
+
+    .submit-container,
+    .submit-container-center {
+        margin: 0 0 2rem 0;
+        padding: 0 1rem;
     }
-    
-    /* Improve touch targets */
-    .checkbox-option input[type="checkbox"] {
+
+    /* Enhanced touch targets */
+    .checkbox-option input[type="checkbox"],
+    .option-item input[type="checkbox"],
+    input[type="radio"] {
         width: 22px;
         height: 22px;
+        margin-right: 0.5rem;
     }
-    
-    /* Better spacing for mobile */
+
+    /* Optimized spacing using rem units */
     .sub-questions {
-        padding: 12px;
-        margin-top: 12px;
+        padding: 0.75rem;
+        margin-top: 0.75rem;
     }
-    
+
     .sub-question {
-        margin-bottom: 12px;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Better error and message containers on mobile */
+    .error-container,
+    .disqualification-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .crisis-resources {
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 8px;
     }
 }
 
@@ -570,13 +602,22 @@ input[type="checkbox"] {
     }
 }
 
-/* Landscape mobile orientation */
-@media (max-width: 768px) and (orientation: landscape) {
-    .sub-questions.two-col {
-        grid-template-columns: repeat(2, 1fr) !important;
+/* Optimized landscape mobile orientation */
+@media (max-width: 768px) and (orientation: landscape) and (min-height: 400px) {
+    .sub-questions.two-col,
+    .checkbox-group,
+    .option-group {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
     }
-    
-    .checkbox-group {
-        grid-template-columns: repeat(2, 1fr) !important;
+
+    .height-weight-grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+
+    .height-weight-grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
     }
 }
