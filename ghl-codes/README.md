@@ -34,6 +34,29 @@ These codes are referenced and embedded within GoHighLevel pages and funnels. Ke
 
 ## Integration Flow
 
-1. **Screening Form** → Triggers `ghlRedirect` event → **Footer Redirect Handler** → Checkout page
+1. **Screening Form** (GitHub Pages) → Triggers `ghlRedirect` event → **Footer Redirect Handler** → Checkout page
 2. **Checkout Page** → Auto-fills with screening data → **Checkout Autofill** → Calendar page
 3. **Calendar Page** → Booking completion → **Calendar Redirect** → Confirmation page
+
+## NEW: GitHub Pages + Iframe Workflow
+
+### Recommended Setup:
+- **Forms hosted on**: `https://locumtele.github.io/EMR/`
+- **Embed in GHL using**: iframe to `embed.html`
+- **Benefits**: Single source of truth, automatic updates, auto-resizing
+
+### Updated Footer Handler:
+The `footer-redirect-handler.js` now supports **both**:
+- Direct form hosting (legacy)
+- **Iframe embedding** (new recommended method)
+
+### Example GHL Iframe:
+```html
+<iframe src="https://locumtele.github.io/EMR/embed.html?screener=GLP1"
+        width="100%"
+        height="600"
+        frameborder="0">
+</iframe>
+```
+
+**Important**: Height will auto-adjust, no scrolling needed!
