@@ -80,7 +80,9 @@ function buildForm(questions) {
 
     // Update DOM
     document.getElementById('loading').style.display = 'none';
-    document.getElementById('form').style.display = 'block';
+    const formElement = document.getElementById('form');
+    formElement.classList.remove('form-hidden');
+    formElement.style.display = 'block';
     document.getElementById('questions').innerHTML = html;
 
     console.log('Form displayed successfully');
