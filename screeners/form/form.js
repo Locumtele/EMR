@@ -1,12 +1,10 @@
 // Working Simple Form System
 const CONFIG = {
-    screener: new URLSearchParams(window.location.search).get('screener') || 'glp1',
-    questionsEndpoint: null,
-    telehealthEndpoint: 'https://locumtele.github.io/EMR/screeners/data/telehealth-logic.json',
+    screener: new URLSearchParams(window.location.search).get('screener') || 'GLP1',
+    questionsEndpoint: 'https://locumtele.app.n8n.cloud/webhook/notion-questions',
+    telehealthEndpoint: 'https://locumtele.app.n8n.cloud/webhook/telehealth-logic',
     submitEndpoint: 'https://locumtele.app.n8n.cloud/webhook/patient-screener'
 };
-
-CONFIG.questionsEndpoint = `https://locumtele.github.io/EMR/screeners/data/${CONFIG.screener.toLowerCase()}.json`;
 
 let currentQuestions = [];
 let screenerCategory = '';
@@ -16,7 +14,7 @@ async function loadQuestions() {
     console.log('Loading questions from:', CONFIG.questionsEndpoint);
 
     try {
-        const response = await fetch(CONFIG.questionsEndpoint);
+        const response = await fetch(`${CONFIG.questionsEndpoint}?screener=${CONFIG.screener}`);
         console.log('Response status:', response.status, response.statusText);
 
         if (!response.ok) {
@@ -26,19 +24,33 @@ async function loadQuestions() {
         const data = await response.json();
         console.log('Data loaded:', data);
 
-        if (!data.questions || data.questions.length === 0) {
+        // Handle Notion webhook response format
+        let questions, category;
+        if (Array.isArray(data) && data.length > 0) {
+            // Parse the content field which contains the JSON string
+            const content = JSON.parse(data[0].content);
+            questions = content.questions;
+            category = content.category;
+        } else if (data.questions) {
+            questions = data.questions;
+            category = data.category;
+        } else {
             throw new Error('No questions found in response');
         }
 
-        currentQuestions = data.questions;
-        screenerCategory = data.category;
+        if (!questions || questions.length === 0) {
+            throw new Error('No questions found in response');
+        }
+
+        currentQuestions = questions;
+        screenerCategory = category;
 
         // Update page elements
         document.title = `${CONFIG.screener.toUpperCase()} Assessment`;
         document.getElementById('dynamic-title').textContent = `${CONFIG.screener.toUpperCase()} Assessment`;
         document.querySelector('.subtitle').textContent = `Complete your personalized ${screenerCategory} assessment`;
 
-        buildForm(data.questions);
+        buildForm(questions);
     } catch (error) {
         console.error('Error loading questions:', error);
         document.getElementById('loading').innerHTML = `
@@ -125,11 +137,11 @@ function renderQuestion(q) {
             <div class="height-weight-grid-2">
                 <div>
                     <label class="input-label-small">Height (feet)</label>
-                    <input class="text-input" type="number" name="height_feet" placeholder="5" min="3" max="8">
+                    <input class="text-input" type="number" name="height_feet" placeholder="5" min="3" max="8" onchange="calculateBMI()">
                 </div>
                 <div>
                     <label class="input-label-small">Height (inches)</label>
-                    <input class="text-input" type="number" name="height_inches" placeholder="6" min="0" max="11">
+                    <input class="text-input" type="number" name="height_inches" placeholder="6" min="0" max="11" onchange="calculateBMI()">
                 </div>
             </div>`;
     }
@@ -137,12 +149,25 @@ function renderQuestion(q) {
         inputHtml = `
             <div>
                 <label class="input-label-small">Weight (pounds)</label>
-                <input class="text-input" type="number" name="weight_pounds" placeholder="180" min="50" max="800">
+                <input class="text-input" type="number" name="weight_pounds" placeholder="180" min="50" max="800" onchange="calculateBMI()">
             </div>
             <div id="bmi-result" class="bmi-result"></div>`;
     }
     else if (q.type === 'file') {
         inputHtml = `<input type="file" name="${q.id}" accept="image/*" class="file-input">`;
+    }
+    else if (q.type === 'select' || q.type === 'dropdown') {
+        const allOptions = [...new Set([...(q.safe || []), ...(q.flag || []), ...(q.disqualify || [])])];
+        
+        inputHtml = `<select class="select-input" name="${q.id}">
+            <option value="">Select ${q.text.toLowerCase()}</option>`;
+        
+        allOptions.forEach(opt => {
+            const cleanOpt = opt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            inputHtml += `<option value="${opt}">${cleanOpt}</option>`;
+        });
+        
+        inputHtml += '</select>';
     }
     else {
         inputHtml = `<input class="text-input" type="text" name="${q.id}" placeholder="Enter ${q.text.toLowerCase()}">`;
@@ -185,18 +210,181 @@ function setupConditionalLogic() {
     }
 }
 
+// BMI Calculation
+function calculateBMI() {
+    const feet = parseInt(document.querySelector('input[name="height_feet"]')?.value) || 0;
+    const inches = parseInt(document.querySelector('input[name="height_inches"]')?.value) || 0;
+    const pounds = parseInt(document.querySelector('input[name="weight_pounds"]')?.value) || 0;
+
+    if (feet > 0 && inches >= 0 && pounds > 0) {
+        const totalInches = (feet * 12) + inches;
+        const bmi = (pounds / (totalInches * totalInches)) * 703;
+        const bmiResult = document.getElementById('bmi-result');
+        
+        if (bmiResult) {
+            bmiResult.innerHTML = `
+                <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; text-align: center;">
+                    <strong>BMI: ${bmi.toFixed(1)}</strong>
+                    ${bmi >= 25 ? '<div style="color: green; font-size: 14px;">✓ Eligible for GLP-1 program</div>' : '<div style="color: red; font-size: 14px;">✗ BMI must be 25 or higher</div>'}
+                </div>
+            `;
+            bmiResult.setAttribute('data-disqualified', bmi < 25 ? 'true' : 'false');
+        }
+    }
+}
+
+// Form validation
+function validateForm() {
+    const formData = new FormData(document.getElementById('form'));
+    const data = {};
+    
+    // Collect all form data properly
+    for (let [key, value] of formData.entries()) {
+        if (data[key]) {
+            if (Array.isArray(data[key])) {
+                data[key].push(value);
+            } else {
+                data[key] = [data[key], value];
+            }
+        } else {
+            data[key] = value;
+        }
+    }
+
+    // Required fields validation
+    const requiredFields = ['1', '2', '3', '4', '5']; // Name, Email, Phone, DOB, Gender
+    for (let field of requiredFields) {
+        if (!data[field] || data[field] === '') {
+            alert('Please fill in all required fields.');
+            return false;
+        }
+    }
+
+    // Email validation
+    const email = data['2'];
+    if (email && !isValidEmail(email)) {
+        alert('Please enter a valid email address.');
+        return false;
+    }
+
+    // Phone validation
+    const phone = data['3'];
+    if (phone && !isValidPhone(phone)) {
+        alert('Please enter a valid phone number.');
+        return false;
+    }
+
+    // Age validation
+    const dob = data['4'];
+    if (dob && !isValidAge(dob)) {
+        alert('You must be 18 years or older to use this service.');
+        return false;
+    }
+
+    // BMI validation
+    const bmiResult = document.getElementById('bmi-result');
+    if (bmiResult && bmiResult.getAttribute('data-disqualified') === 'true') {
+        alert('Our GLP-1 program is designed for individuals with a BMI of 25 or higher.');
+        return false;
+    }
+
+    // Check disqualifying conditions
+    const disqualification = checkDisqualifyingConditions(data, currentQuestions);
+    if (disqualification.disqualified) {
+        showDisqualificationScreen(disqualification.message);
+        return false;
+    }
+
+    return true;
+}
+
+// Helper validation functions
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function isValidPhone(phone) {
+    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+}
+
+function isValidAge(dob) {
+    const today = new Date();
+    const birthDate = new Date(dob);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        return age - 1 >= 18;
+    }
+    return age >= 18;
+}
+
+// Check disqualifying conditions
+function checkDisqualifyingConditions(data, questions) {
+    for (let question of questions) {
+        if (question.disqualify && question.disqualify.length > 0) {
+            const userResponse = data[question.id];
+            if (userResponse) {
+                const responses = Array.isArray(userResponse) ? userResponse : [userResponse];
+                for (let response of responses) {
+                    if (question.disqualify.includes(response)) {
+                        return {
+                            disqualified: true,
+                            message: question.disqualifyMessage || 'You do not meet the requirements for this program.'
+                        };
+                    }
+                }
+            }
+        }
+    }
+    return { disqualified: false };
+}
+
+// Show disqualification screen
+function showDisqualificationScreen(message) {
+    document.getElementById('form').style.display = 'none';
+    document.getElementById('loading').innerHTML = `
+        <div style="text-align: center; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h2 style="color: #dc3545; margin-bottom: 20px;">Assessment Complete</h2>
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px;">${message}</p>
+            <button onclick="location.reload()" style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px;">Start Over</button>
+        </div>
+    `;
+    document.getElementById('loading').style.display = 'block';
+}
+
 // Form submission
 document.getElementById('form').addEventListener('submit', async function(e) {
     e.preventDefault();
     console.log('Form submitted');
 
+    if (!validateForm()) {
+        return;
+    }
+
     const formData = new FormData(this);
+    const data = {};
+    
+    // Collect all form data properly
+    for (let [key, value] of formData.entries()) {
+        if (data[key]) {
+            if (Array.isArray(data[key])) {
+                data[key].push(value);
+            } else {
+                data[key] = [data[key], value];
+            }
+        } else {
+            data[key] = value;
+        }
+    }
 
     try {
         // Load telehealth logic
-        const telehealthResponse = await fetch(CONFIG.telehealthEndpoint);
+        const telehealthResponse = await fetch(`${CONFIG.telehealthEndpoint}?screener=${CONFIG.screener}`);
         const telehealthData = await telehealthResponse.json();
-        const screenerLogic = telehealthData.screeners[CONFIG.screener];
+        const screenerLogic = telehealthData;
 
         // Submit to n8n
         await fetch(CONFIG.submitEndpoint, {
@@ -205,7 +393,7 @@ document.getElementById('form').addEventListener('submit', async function(e) {
             body: JSON.stringify({
                 form_type: `${CONFIG.screener}_Screening`,
                 timestamp: new Date().toISOString(),
-                responses: Object.fromEntries(formData.entries())
+                responses: data
             })
         });
 

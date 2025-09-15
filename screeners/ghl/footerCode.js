@@ -9,7 +9,6 @@
     // Capture location values from GHL merge fields
     const locationId   = "{{location.id}}";
     const locationName = "{{location.name}}";
-    const integration = "{{custom_values.private}}";
     const rootdomain = "{{ custom_values.root_domain }}";
 
 

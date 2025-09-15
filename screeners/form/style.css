@@ -226,7 +226,7 @@ input[type="checkbox"] {
     margin-bottom: 0;
 }
 
-.text-input, .textarea-input {
+.text-input, .textarea-input, .select-input {
     width: 100%;
     padding: 15px;
     border: 1px solid #ddd;
@@ -235,8 +235,22 @@ input[type="checkbox"] {
     font-size: 16px;
 }
 
-.text-input {
+.text-input, .select-input {
     height: 45px;
+}
+
+.select-input {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+.select-input option {
+    padding: 8px 12px;
 }
 
 .textarea-input {
@@ -380,11 +394,15 @@ input[type="checkbox"] {
     }
 
     /* Enhanced input styling for mobile */
-    .text-input {
+    .text-input, .select-input {
         height: 44px; /* Standard mobile touch target */
         padding: 0.75rem;
         font-size: 16px; /* Prevents zoom on iOS */
         border-radius: 8px;
+    }
+    
+    .select-input {
+        padding-right: 2.5rem; /* Adjust for mobile */
     }
 
     .textarea-input {
