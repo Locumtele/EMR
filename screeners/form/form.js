@@ -205,14 +205,19 @@ async function loadQuestions() {
 }
 
 function buildForm(questions) {
+    console.log('Building form with questions:', questions);
+
     const sections = {};
     questions.forEach(q => {
         if (!sections[q.section]) sections[q.section] = [];
         sections[q.section].push(q);
     });
 
+    console.log('Sections created:', sections);
+
     let html = '';
     Object.entries(sections).forEach(([section, qs]) => {
+        console.log(`Rendering section: ${section} with ${qs.length} questions`);
         html += `<div class="question-group">
             <div class="question-title">${section}</div>
             ${qs.map(q => renderQuestion(q)).join('')}
@@ -221,9 +226,24 @@ function buildForm(questions) {
 
     html += '<div class="submit-container-center"><button type="submit" class="nav-button">SUBMIT ASSESSMENT</button></div>';
 
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('form').style.display = 'block';
-    document.getElementById('questions').innerHTML = html;
+    console.log('Generated HTML length:', html.length);
+    console.log('HTML preview:', html.substring(0, 200) + '...');
+
+    const loadingElement = document.getElementById('loading');
+    const formElement = document.getElementById('form');
+    const questionsElement = document.getElementById('questions');
+
+    console.log('DOM elements found:', {
+        loading: !!loadingElement,
+        form: !!formElement,
+        questions: !!questionsElement
+    });
+
+    if (loadingElement) loadingElement.style.display = 'none';
+    if (formElement) formElement.style.display = 'block';
+    if (questionsElement) questionsElement.innerHTML = html;
+
+    console.log('Form display updated');
 
     setupConditionalLogic();
     setupValidation();
