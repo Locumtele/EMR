@@ -22,5 +22,25 @@
     </div>
 
     <script src="form.js"></script>
+    <script>
+        function sendHeight() {
+          const height = document.documentElement.scrollHeight || document.body.scrollHeight;
+          parent.postMessage({ frameHeight: height }, "*");
+        }
+      
+        // Run once on load
+        window.addEventListener("load", sendHeight);
+      
+        // Run again on resize
+        window.addEventListener("resize", sendHeight);
+      
+        // Keep watching in case new questions are added dynamically
+        const observer = new MutationObserver(sendHeight);
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true
+        });
+      </script>
 </body>
 </html>
