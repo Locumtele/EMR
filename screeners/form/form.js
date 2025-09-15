@@ -263,7 +263,7 @@ function validateForm() {
     const formData = new FormData(document.getElementById('form'));
     const data = {};
     
-    // Collect all form data properly
+    // Collect all form data properly - handle checkboxes correctly
     for (let [key, value] of formData.entries()) {
         if (data[key]) {
             if (Array.isArray(data[key])) {
@@ -273,6 +273,13 @@ function validateForm() {
             }
         } else {
             data[key] = value;
+        }
+    }
+    
+    // Also collect all checkbox values using getAll
+    for (let [key, value] of formData.entries()) {
+        if (formData.getAll(key).length > 1) {
+            data[key] = formData.getAll(key);
         }
     }
 
@@ -430,7 +437,7 @@ document.getElementById('form').addEventListener('submit', async function(e) {
     const formData = new FormData(this);
     const data = {};
     
-    // Collect all form data properly
+    // Collect all form data properly - handle checkboxes correctly
     for (let [key, value] of formData.entries()) {
         if (data[key]) {
             if (Array.isArray(data[key])) {
@@ -440,6 +447,13 @@ document.getElementById('form').addEventListener('submit', async function(e) {
             }
         } else {
             data[key] = value;
+        }
+    }
+    
+    // Also collect all checkbox values using getAll
+    for (let [key, value] of formData.entries()) {
+        if (formData.getAll(key).length > 1) {
+            data[key] = formData.getAll(key);
         }
     }
 
